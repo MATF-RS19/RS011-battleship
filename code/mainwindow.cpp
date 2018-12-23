@@ -3,12 +3,27 @@
 
 #include <QPainter>
 #include <QPaintEvent>
+#include <QPointF>
+#include <QVector>
+#include <QDebug>
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <stdlib.h>
+#include <time.h>
+#include <QGraphicsTextItem>
 
 Main::Main(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::Main)
+     ui(new Ui::Main)
 {
-    ui->setupUi(this);
+   ui->setupUi(this);
+   QPixmap pix(":/background2.jpg");
+   pix = pix.scaled(this->size(), Qt::IgnoreAspectRatio);
+   QPalette palette;
+   palette.setBrush(QPalette::Background, pix);
+   this->setPalette(palette);
+
 }
 
 Main::~Main()
@@ -36,3 +51,4 @@ void Main::paintEvent(QPaintEvent *e) {
     }
     painter.drawRect(r2);
 }
+
