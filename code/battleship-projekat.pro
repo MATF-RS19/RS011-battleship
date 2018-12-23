@@ -27,16 +27,19 @@ SOURCES += \
         main.cpp \
     mainwindow.cpp \
     Player.cpp \
-    second.cpp
+    second.cpp \
+    board.cpp
 
 HEADERS += \
     mainwindow.h \
     Player.h \
-    second.h
+    second.h \
+    board.h
 
 FORMS += \
         main.ui \
-    second.ui
+    second.ui \
+    board.ui
 
 RESOURCES += \
     ../resource/resource.qrc

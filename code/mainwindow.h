@@ -1,6 +1,8 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "board.h"
+
 #include <QMainWindow>
 #include <QGraphicsView>
 #include <QGraphicsScene>
@@ -17,11 +19,10 @@ class Main : public QMainWindow
 public:
     explicit Main(QWidget *parent = 0);
     ~Main();
-    void paintEvent(QPaintEvent *e);
 
 private:
-     Ui::Main *ui;
-
+    Ui::Main *ui;
+    Board *board;
 };
 
 #endif // MAINWINDOW_H
