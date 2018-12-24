@@ -28,13 +28,15 @@ SOURCES += \
     mainwindow.cpp \
     Player.cpp \
     second.cpp \
-    board.cpp
+    board.cpp \
+    ship.cpp
 
 HEADERS += \
     mainwindow.h \
     Player.h \
     second.h \
-    board.h
+    board.h \
+    ship.h
 
 FORMS += \
         main.ui \

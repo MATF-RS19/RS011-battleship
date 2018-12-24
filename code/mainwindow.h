@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include "board.h"
+#include "ship.h"
 
 #include <QMainWindow>
 #include <QGraphicsView>
@@ -23,6 +24,11 @@ public:
 private:
     Ui::Main *ui;
     Board *board;
+    Ship *brod1;
+    Ship *brod2;
+    Ship *brod3;
+    Ship *brod4;
+    QGraphicsScene *scene;
 };
 
 #endif // MAINWINDOW_H
