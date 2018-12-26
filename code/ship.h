@@ -9,13 +9,20 @@ class Ship : public QGraphicsItem
 public:
     Ship(QString name, int length);
 
-    QRectF boundingRect() const override;
+    QRectF boundingRect() const;
 
-    void paint(QPainter * painter, const QStyleOptionGraphicsItem * option, QWidget *widget) override;
+    void paint(QPainter * painter, const QStyleOptionGraphicsItem * option, QWidget *widget);
 
+    void mousePressEvent(QGraphicsSceneMouseEvent *event);
+    void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
+protected:
+    void setAcnhorPoint(const QPointF &anchorPoint);
 private:
-    int m_length;
     QString m_name;
+    int m_length;
+    QPointF anchorPoint;
+    bool m_draged;
 };
 
 #endif // SHIP_H

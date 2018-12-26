@@ -23,7 +23,8 @@ public:
 
 private:
     Ui::Main *ui;
-    Board *board;
+    Board *board1;
+    Board *board2;
     Ship *brod1;
     Ship *brod2;
     Ship *brod3;

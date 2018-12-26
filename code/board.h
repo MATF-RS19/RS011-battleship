@@ -1,25 +1,23 @@
 #ifndef BOARD_H
 #define BOARD_H
 
-#include <QFrame>
+#include <QGraphicsItem>
 
-namespace Ui {
-class Board;
-}
-
-class Board : public QWidget
-{
-    Q_OBJECT
-
+class Board : public QGraphicsItem {
 public:
-    explicit Board(QWidget *parent = 0);
-    ~Board();
+    Board(int x, int y);
+    QRectF boundingRect() const;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *);
 
-public slots:
-    void paintEvent(QPaintEvent *e);
+    void dragEnterEvent(QGraphicsSceneDragDropEvent *event);
+    void dragLeaveEvent(QGraphicsSceneDragDropEvent *event);
+    void dropEvent(QGraphicsSceneDragDropEvent *event);
+    void mousePressEvent(QGraphicsSceneMouseEvent *event);
 
 private:
-    Ui::Board *ui;
+    int m_x;
+    int m_y;
+    bool m_drag_over;
 };
 
 #endif // BOARD_H

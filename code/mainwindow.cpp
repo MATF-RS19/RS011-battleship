@@ -29,16 +29,35 @@ Main::Main(QWidget *parent) :
    connect(ui->quit, SIGNAL(triggered()), this, SLOT(close()));
 
    scene = new QGraphicsScene(this);
-   ui->graphicsView->setScene(scene);
-   QPixmap source(":/metallic_background.jpg");
-   int h = source.height();
-   int w = source.width();
-   source = source.scaled(w/5, h/5);
-   ui->graphicsView->setBackgroundBrush(source);
+   QPixmap *source = new QPixmap(":/background2.jpg");
+
+   ui->graphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+   ui->graphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+   QPixmap sized = source->scaled(
+               QSize(ui->graphicsView->width(),
+                     ui->graphicsView->height()),
+               Qt::KeepAspectRatioByExpanding);
+
+   QImage sizedImage = QImage(sized.toImage());
+   QImage sizedCroppedImage = QImage(sizedImage.copy(0,0,
+          (ui->graphicsView->width() - 1),
+          (ui->graphicsView->height() - 1)));
+
+   QGraphicsPixmapItem *sizedBackground = scene->addPixmap(
+           QPixmap::fromImage(sizedCroppedImage));
+   Q_UNUSED(sizedBackground);
+
+   board1 = new Board(70, 100);
+   scene->addItem(board1);
+
+   board2 = new Board(370, 100);
+   scene->addItem(board2);
+
    brod1 = new Ship(QString("Submarine"), 2);
    brod1->setFlag(QGraphicsItem::ItemIsSelectable, true);
    brod1->setFlag(QGraphicsItem::ItemIsMovable, true);
    scene->addItem(brod1);
+   brod1->acceptedMouseButtons();
 
    brod2 = new Ship(QString("Submarine"), 3);
    brod2->setFlag(QGraphicsItem::ItemIsSelectable, true);
@@ -54,6 +73,10 @@ Main::Main(QWidget *parent) :
    brod4->setFlag(QGraphicsItem::ItemIsSelectable, true);
    brod4->setFlag(QGraphicsItem::ItemIsMovable, true);
    scene->addItem(brod4);
+
+   ui->graphicsView->setScene(this->scene);
+   ui->graphicsView->setLineWidth(Qt::AlignTop | Qt::AlignLeft);
+
 }
 
 Main::~Main()

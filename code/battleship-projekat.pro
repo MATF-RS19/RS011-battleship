@@ -21,7 +21,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # In order to do so, uncomment the following line.
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
-
+CONFIG += -std=c++11
 
 SOURCES += \
         main.cpp \
@@ -29,19 +29,20 @@ SOURCES += \
     Player.cpp \
     second.cpp \
     board.cpp \
-    ship.cpp
+    ship.cpp \
+    square.cpp
 
 HEADERS += \
     mainwindow.h \
     Player.h \
     second.h \
     board.h \
-    ship.h
+    ship.h \
+    square.h
 
 FORMS += \
         main.ui \
-    second.ui \
-    board.ui
+    second.ui
 
 RESOURCES += \
     ../resource/resource.qrc
