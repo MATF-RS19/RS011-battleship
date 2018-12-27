@@ -1,72 +1,76 @@
 #include "board.h"
-#include "ui_board.h"
 
-#include <QGraphicsSceneDragDropEvent>
-#include <QPaintEvent>
-#include <QPainter>
-#include <QtWidgets>
 #include <QDebug>
+#include <QGraphicsScene>
 
-Board::Board(int x, int y)
-    : m_x(x), m_y(y), m_drag_over(false) {
-    setFlag(QGraphicsItem::ItemIsSelectable, true);
-    setAcceptDrops(true);
+Board::Board()
+{
+
 }
 
-QRectF Board::boundingRect() const {
-    return QRect(0, 0, 200, 200);
+QList<Square *> Board::getSquares()
+{
+    return squares;
 }
 
-void Board::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *) {
-    Q_UNUSED(option);
-    painter->drawRect(m_x, m_y, 200, 200);
+void Board::placeSquares(int x,int y,int cols,int rows, bool r, QGraphicsScene *scene)
+{
+    for (int i = 0; i < cols; i++){
+        createSquareColumn(x + i*20, y, rows, r, i, scene);
+    }
+}
 
-    for (int i = 0; i < 10; i++) {
-        for (int j = 0; j < 10; j++) {
-            painter->drawRect(m_x+i*20, m_y+j*20,20, 20);
+void Board::clickedOn(int x1, int y1, int x2, int y2)
+{
+    if ((x1 == x2) & (y1 != y2)) {
+        int length = std::abs(y1 - y2);
+        if (y1 > y2) {
+            while(length >= 0) {
+                findSquare(x1, y1-length);
+                length--;
+            }
+        } else {
+            while(length >= 0) {
+                findSquare(x1, y1+length);
+                length--;
+            }
+        }
+    } else if ((y1 == y2) & (x1 != x2)) {
+        int length = std::abs(x1 - x2);
+        if (x1 > x2) {
+            while (length >= 0) {
+                findSquare(x1 - length, y1);
+                length--;
+            }
+        } else {
+            while (length >= 0) {
+                findSquare(x1 + length, y1);
+                length--;
+            }
         }
     }
 }
 
-void Board::dragEnterEvent(QGraphicsSceneDragDropEvent *event)
+void Board::findSquare(int i, int j)
 {
-//    event->setAccepted(true);
-    m_drag_over = true;
-    qDebug() << "##" << event->pos();
-    QGraphicsItem::dragLeaveEvent(event);
+    for (auto& s : squares) {
+        if ((s->getI() == i) & (s->getJ() == j)) {
+            s->setSelected(true);
+        }
+    }
 }
 
-void Board::dragLeaveEvent(QGraphicsSceneDragDropEvent *event)
+void Board::createSquareColumn(int x, int y, int rows, bool r, int curr_i, QGraphicsScene *scene)
 {
-    m_drag_over = false;
-    qDebug() << "##" << event->pos();
-    QGraphicsItem::dragLeaveEvent(event);
+    for(int i = 0; i < rows; i++) {
+        Square* square = new Square();
+        square->setPos(x, y+i*20);
+        square->setPlaced(true);
+        square->setSecond(r);
+        square->setI(i);
+        square->setJ(curr_i);
+        squares.append(square);
+        scene->addItem(square);
+    }
 }
-
-void Board::dropEvent(QGraphicsSceneDragDropEvent *event)
-{
-    m_drag_over = false;
-    qDebug() << "##" << event->pos();
-    QGraphicsItem::dragLeaveEvent(event);
-}
-
-void Board::mousePressEvent(QGraphicsSceneMouseEvent *event)
-{
-    qDebug() << "@@@@@" << event->screenPos();
-
-}
-
-//void Board::paintEvent(QPaintEvent *e) {
-//    QWidget::paintEvent(e);
-//    QPainter p(this);
-//    p.drawRect(10, 0, 200, 200);
-//    p.drawRect(290, 0, 200, 200);
-//    for (int i = 1; i < 10; i++) {
-//        p.drawLine(10+i*20, 0, 10+i*20, 200);
-//        p.drawLine(10, i*20, 210, i*20);
-
-//        p.drawLine(290+i*20, 0, 290+i*20, 200);
-//        p.drawLine(290, i*20, 490, i*20);
-//    }
-//}
 

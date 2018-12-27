@@ -1,23 +1,23 @@
 #ifndef BOARD_H
 #define BOARD_H
 
-#include <QGraphicsItem>
+#include "square.h"
+#include <QList>
+#include <QGraphicsScene>
 
-class Board : public QGraphicsItem {
+class Board {
+
 public:
-    Board(int x, int y);
-    QRectF boundingRect() const;
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *);
+    Board();
 
-    void dragEnterEvent(QGraphicsSceneDragDropEvent *event);
-    void dragLeaveEvent(QGraphicsSceneDragDropEvent *event);
-    void dropEvent(QGraphicsSceneDragDropEvent *event);
-    void mousePressEvent(QGraphicsSceneMouseEvent *event);
+    QList<Square*> getSquares();
+    void placeSquares(int x, int y, int cols, int rows, bool r, QGraphicsScene *scene);
 
+    void clickedOn(int x1, int y1, int x2, int y2);
+    void findSquare(int i, int j);
 private:
-    int m_x;
-    int m_y;
-    bool m_drag_over;
+    QList<Square*> squares;
+    void createSquareColumn(int x, int y, int rows, bool r, int curr_i, QGraphicsScene *scene);
 };
 
 #endif // BOARD_H

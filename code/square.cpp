@@ -12,6 +12,7 @@ Square::Square(QGraphicsItem *parent){
 
     m_placed = false;
     m_second = false;
+    m_selected = false;
 }
 
 bool Square::getPlaced()
@@ -34,6 +35,11 @@ int Square::getJ()
     return m_j;
 }
 
+bool Square::getSelected()
+{
+    return m_selected;
+}
+
 void Square::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_UNUSED(event);
@@ -50,8 +56,15 @@ void Square::setSecond(bool b)
     m_second = b;
 }
 
-void Square::setPlacement(int i, int j)
-{
+void Square::setI(int i) {
     m_i = i;
+}
+
+void Square::setJ(int j) {
     m_j = j;
+}
+
+void Square::setSelected(bool b)
+{
+    m_selected = b;
 }
