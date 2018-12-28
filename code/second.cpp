@@ -23,6 +23,7 @@ void Second::on_Play_clicked()
     hide();
     m = new Main(this);
     m->show();
+    m->start();
 }
 
 void Second::on_Close_clicked()

@@ -67,9 +67,6 @@
       <height>511</height>
      </size>
     </property>
-    <property name="mouseTracking">
-     <bool>true</bool>
-    </property>
     <property name="verticalScrollBarPolicy">
      <enum>Qt::ScrollBarAlwaysOff</enum>
     </property>
@@ -77,9 +74,26 @@
      <enum>Qt::ScrollBarAlwaysOff</enum>
     </property>
    </widget>
+   <widget class="QPushButton" name="Ready">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>270</x>
+      <y>380</y>
+      <width>99</width>
+      <height>27</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Ready</string>
+    </property>
+   </widget>
    <zorder>graphicsView</zorder>
    <zorder>l1</zorder>
    <zorder>l2</zorder>
+   <zorder>Ready</zorder>
   </widget>
   <widget class="QMenuBar" name="meni">
    <property name="geometry">
@@ -87,7 +101,7 @@
      <x>0</x>
      <y>0</y>
      <width>640</width>
-     <height>22</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="file">

@@ -1,6 +1,10 @@
+#include "board.h"
 #include "square.h"
-#include <QDebug>
+#include "mainwindow.h"
+#include "second.h"
 
+#include <QDebug>
+extern Second* w;
 Square::Square(QGraphicsItem *parent){
     Q_UNUSED(parent);
 
@@ -43,7 +47,20 @@ bool Square::getSelected()
 void Square::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_UNUSED(event);
-    qDebug() << QString("mousePressEvent") << this->pos() << this->getI() << this->getJ();
+    /*qDebug() << QString("mousePressEvent") << this->pos() << this->getI() << this->getJ();
+    if (count == 2) {
+        x1 = this->getI();
+        y1 = this->getJ();
+        count--;
+    } else if (count == 1) {
+        x2 = this->getI();
+        y2 = this->getJ();
+        count--;
+    }
+    if (count == 0)
+        count = 2;*/
+
+    w->m->pickedSquare(this);
 }
 
 void Square::setPlaced(bool b)
@@ -54,6 +71,12 @@ void Square::setPlaced(bool b)
 void Square::setSecond(bool b)
 {
     m_second = b;
+}
+
+void Square::setPlacement(int i, int j)
+{
+    m_i = i;
+    m_j = j;
 }
 
 void Square::setI(int i) {

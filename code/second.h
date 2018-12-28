@@ -15,6 +15,7 @@ class Second : public QDialog
 public:
     explicit Second(QWidget *parent = 0);
     ~Second();
+    Main *m;
 
 private slots:
     void on_Play_clicked();
@@ -23,7 +24,6 @@ private slots:
 
 private:
     Ui::Second *ui;
-    Main *m;
 };
 
 #endif // SECOND_H

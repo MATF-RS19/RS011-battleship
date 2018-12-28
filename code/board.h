@@ -18,6 +18,45 @@ public:
 private:
     QList<Square*> squares;
     void createSquareColumn(int x, int y, int rows, bool r, int curr_i, QGraphicsScene *scene);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    /*
+public:
+    Board(int x, int y);
+    QRectF boundingRect() const override;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *);
+
+    void dragEnterEvent(QGraphicsSceneDragDropEvent *event) override;
+    void dragLeaveEvent(QGraphicsSceneDragDropEvent *event) override;
+    void dropEvent(QGraphicsSceneDragDropEvent *event) override;
+    void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
+
+
+private:
+    int m_x;
+    int m_y;
+    bool m_drag_over;*/
 };
 
 #endif // BOARD_H

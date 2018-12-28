@@ -8,16 +8,19 @@
 #include <QtWidgets>
 #include <QGraphicsItem>
 #include <QDebug>
+#include "board.h"
 
 Ship::Ship(QString name, int length) :
     m_name(name), m_length(length), m_draged(false)
 {
+    setFlag(QGraphicsItem::ItemIsSelectable, true);
+    setFlag(QGraphicsItem::ItemIsMovable, true);
     setAcceptedMouseButtons(Qt::LeftButton);
 }
 
 QRectF Ship::boundingRect() const
 {
-    return QRectF(290 + 20 * (m_length - 2), 100, 13, m_length * 20);
+    return QRectF(240+20*m_length, 100, 13, m_length*20);
 }
 
 void Ship::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *)
@@ -28,31 +31,68 @@ void Ship::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
     int w = source.width();
     source = source.scaled(w/30, h/30);
     painter->setBrush(source);
-    painter->drawEllipse(290 + 20 * (m_length - 2), 100, 13, m_length * 20);
+    painter->drawEllipse(240+20*m_length, 100, 13, m_length * 20);
+    // painter->translate(237, 80);
 
 }
 
-void Ship::setAcnhorPoint(const QPointF &anchorPoint) {
+void Ship::setAnchorPoint(const QPointF &anchorPoint) {
     this->anchorPoint = anchorPoint;
 }
+int Ship::getShipLength() const
+{
+    return m_length;
+}
 
+void Ship::setIsVertical(bool val)
+{
+    isVertical = val;
+}
+
+bool Ship::getIsVertical()
+{
+    return isVertical;
+}
+
+void Ship::rotationShip()
+{
+
+    //this->setRotation(90);
+    QPointF offset = this->boundingRect().center();
+    QTransform transformation;
+    transformation.translate(offset.x(), offset.y());
+    transformation.rotate(90);
+    transformation.translate(-offset.x(), -offset.y());
+    this->setTransform(transformation);
+    /*
+        QPointF offset = gr->sceneBoundingRect().center();
+
+        QTransform transform;
+        transform.translate(offset.x(),offset.y());
+        transform.rotate(90);
+        transform.translate(-offset.x(),-offset.y());
+        gr->setTransform(transform);
+
+        scene->destroyItemGroup(gr);
+        scene->update();*/
+}
 void Ship::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     setCursor(Qt::ClosedHandCursor);
-    QGraphicsItem::mousePressEvent(event);
+    QGraphicsRectItem::mousePressEvent(event);
 }
 
 void Ship::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
     m_draged = true;
-    QGraphicsItem::mouseMoveEvent(event);
+    QGraphicsRectItem::mouseMoveEvent(event);
 }
 
 void Ship::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     setCursor(Qt::OpenHandCursor);
-    qDebug() << event->screenPos();
-    QGraphicsItem::mouseReleaseEvent(event);
+    qDebug() << this->pos();
+    QGraphicsRectItem::mouseReleaseEvent(event);
 
 }
 

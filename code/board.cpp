@@ -1,7 +1,13 @@
 #include "board.h"
 
+#include <QGraphicsSceneDragDropEvent>
+#include <QGraphicsSceneMouseEvent>
+#include <QPaintEvent>
+#include <QPainter>
+#include <QtWidgets>
 #include <QDebug>
 #include <QGraphicsScene>
+#include <algorithm>
 
 Board::Board()
 {
@@ -22,6 +28,7 @@ void Board::placeSquares(int x,int y,int cols,int rows, bool r, QGraphicsScene *
 
 void Board::clickedOn(int x1, int y1, int x2, int y2)
 {
+    qDebug() << "i dalje";
     if ((x1 == x2) & (y1 != y2)) {
         int length = std::abs(y1 - y2);
         if (y1 > y2) {
@@ -49,6 +56,7 @@ void Board::clickedOn(int x1, int y1, int x2, int y2)
             }
         }
     }
+     qDebug() << "i dalje";
 }
 
 void Board::findSquare(int i, int j)
@@ -62,15 +70,15 @@ void Board::findSquare(int i, int j)
 
 void Board::createSquareColumn(int x, int y, int rows, bool r, int curr_i, QGraphicsScene *scene)
 {
+    Q_UNUSED(r);
     for(int i = 0; i < rows; i++) {
         Square* square = new Square();
         square->setPos(x, y+i*20);
         square->setPlaced(true);
-        square->setSecond(r);
         square->setI(i);
         square->setJ(curr_i);
+        square->setPlacement(i, curr_i);
         squares.append(square);
         scene->addItem(square);
     }
 }
-

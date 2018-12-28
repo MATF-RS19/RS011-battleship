@@ -3,11 +3,13 @@
 #include <QApplication>
 #include <QDebug>
 
+Second *w;
+
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    Second w;
-    w.show();
+    w = new Second();
+    w->show();
 
     return a.exec();
 }
