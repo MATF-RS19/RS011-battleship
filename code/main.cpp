@@ -1,14 +1,14 @@
 #include "mainwindow.h"
-#include "second.h"
+#include "gameserver.h"
 #include <QApplication>
 #include <QDebug>
 
-Second *w;
+Gameserver *w;
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    w = new Second();
+    w = new Gameserver();
     w->show();
 
     return a.exec();

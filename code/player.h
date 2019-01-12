@@ -10,10 +10,14 @@ public:
     Player(QString name);
     void init_ships();
     std::vector<Ship*> getShips() const;
+    int getCorrectGuesses() const;
+    void setCorrectGuesses(int number);
+    bool IWon();
+    ~Player();
 private:
     QString m_name;
-    QString m_messages;
-   std::vector<Ship*> m_ships;
+    std::vector<Ship*> m_ships;
+    int m_countCorrectGuessesPlayer = 0;
 };
 
 #endif // PLAYER_H

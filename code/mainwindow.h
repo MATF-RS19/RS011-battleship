@@ -9,7 +9,8 @@
 #include <QGraphicsScene>
 #include <QMouseEvent>
 #include "square.h"
-#include "Player.h"
+#include "player.h"
+#include "machine.h"
 
 namespace Ui {
 class Main;
@@ -22,24 +23,26 @@ class Main : public QMainWindow
 public:
     explicit Main(QWidget *parent = 0);
     void pickedSquare(Square* square);
-    void moveShip(const QPointF startPoint, int length, bool isVertical) const;
-    void start();
+    void moveShip(const QPointF startPoint, int length, bool isVertical, std::vector<int> coords) const;
+    void init();
+    void deinit();
+    bool getLock() const;
+
     ~Main();
      QGraphicsScene *scene;
-     Square *pSquare = nullptr;
-     Square *kSquare = nullptr;
+     Square *startSquare = nullptr;
+     Square *endSquare = nullptr;
+
 private slots:
     void on_Ready_clicked();
+    void restart();
 
 private:
     Ui::Main *ui;
-    Board *board1;
-    Board *board2;
-    Ship *brod1;
-    Ship *brod2;
-    Ship *brod3;
-    Ship *brod4;
-    Player *m_p;
+    Board *m_board1;
+    Board *m_board2;
+    Player *m_player;
+    Machine *m_machine;
     bool m_lock = 0;
 };
 

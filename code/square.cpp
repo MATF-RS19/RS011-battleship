@@ -1,10 +1,10 @@
 #include "board.h"
 #include "square.h"
 #include "mainwindow.h"
-#include "second.h"
+#include "gameserver.h"
 
 #include <QDebug>
-extern Second* w;
+extern Gameserver* w;
 Square::Square(QGraphicsItem *parent){
     Q_UNUSED(parent);
 
@@ -15,31 +15,47 @@ Square::Square(QGraphicsItem *parent){
     setRect(square);
 
     m_placed = false;
-    m_second = false;
+    m_FirstBoard = false;
     m_selected = false;
+    m_attacked = false;
+
+    m_borderSquares["topBorder"] = false;
+    m_borderSquares["leftBorder"] = false;
+    m_borderSquares["rightBorder"] = false;
+    m_borderSquares["bottomBorder"] = false;
+
+    m_borderSquares["topLeftCorner"] = false;
+    m_borderSquares["topRightCorner"] = false;
+    m_borderSquares["bottomLeftCorner"] = false;
+    m_borderSquares["bottomRightCorner"] = false;
 }
 
-bool Square::getPlaced()
+bool Square::getPlaced() const
 {
     return m_placed;
 }
 
-bool Square::getSecond()
+bool Square::getFirstBoard() const
 {
-    return m_second;
+    return m_FirstBoard;
 }
 
-int Square::getI()
+int Square::getI() const
 {
     return m_i;
 }
 
-int Square::getJ()
+int Square::getJ() const
 {
     return m_j;
 }
 
-bool Square::getSelected()
+bool Square::getAttacked() const
+{
+    return m_attacked;
+}
+
+bool Square::getSelected() const
 {
     return m_selected;
 }
@@ -47,20 +63,13 @@ bool Square::getSelected()
 void Square::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_UNUSED(event);
-    /*qDebug() << QString("mousePressEvent") << this->pos() << this->getI() << this->getJ();
-    if (count == 2) {
-        x1 = this->getI();
-        y1 = this->getJ();
-        count--;
-    } else if (count == 1) {
-        x2 = this->getI();
-        y2 = this->getJ();
-        count--;
+    if(this->getFirstBoard()){//when clicked on player's board, for ship setting
+        w->m->pickedSquare(this);
     }
-    if (count == 0)
-        count = 2;*/
+    else if (!this->getFirstBoard()  && w->m->getLock()){//when clicked on opponent's board and all ships are positioned, for attack
+        emit squareClicked(this->getI(), this->getJ(), this->pos());
+    }
 
-    w->m->pickedSquare(this);
 }
 
 void Square::setPlaced(bool b)
@@ -68,15 +77,9 @@ void Square::setPlaced(bool b)
     m_placed = b;
 }
 
-void Square::setSecond(bool b)
+void Square::setFirstBoard(bool b)
 {
-    m_second = b;
-}
-
-void Square::setPlacement(int i, int j)
-{
-    m_i = i;
-    m_j = j;
+    m_FirstBoard = b;
 }
 
 void Square::setI(int i) {
@@ -87,7 +90,61 @@ void Square::setJ(int j) {
     m_j = j;
 }
 
+void Square::setAttacked()
+{
+    m_attacked = true;
+}
+
 void Square::setSelected(bool b)
 {
     m_selected = b;
+}
+void Square::checkIfSquareIsOnBorder() {
+    if (m_i == 0 && m_j == 0) {
+        m_borderSquares["topLeftCorner"] = true;
+    } else if (m_i == 0 && m_j == 9) {
+        m_borderSquares["topRightCorner"] = true;
+    } else if (m_i == 0) {
+        m_borderSquares["topBorder"] = true;
+    } else if (m_i == 9 && m_j == 0) {
+        m_borderSquares["bottomLeftCorner"] = true;
+    } else if (m_i == 9 && m_j == 9) {
+        m_borderSquares["bottomRightCorner"] = true;
+    } else if (m_i == 9) {
+        m_borderSquares["bottomBorder"] = true;
+    } else if (m_j == 0) {
+        m_borderSquares["leftBorder"] = true;
+    } else if (m_j == 9) {
+        m_borderSquares["rightBorder"] = true;
+    }
+}
+
+bool Square::squareIsOnBorder()
+{
+    if (m_borderSquares["topLeftCorner"]) {
+        return true;
+    } else if (m_borderSquares["topRightCorner"]) {
+        return true;
+    } else if (m_borderSquares["bottomLeftCorner"]) {
+        return true;
+    } else if (m_borderSquares["bottomRightCorner"]) {
+        return true;
+    } else if (m_borderSquares["topBorder"]) {
+        return true;
+    } else if (m_borderSquares["bottomBorder"]) {
+        return true;
+    } else if (m_borderSquares["leftBorder"]) {
+        return true;
+    } else if (m_borderSquares["rightBorder"]) {
+        return true;
+    } else {
+        return false;
+    }
+
+
+}
+
+bool Square::checkIfSquareIs(QString border)
+{
+    return m_borderSquares[border];
 }

@@ -90,10 +90,24 @@
      <string>Ready</string>
     </property>
    </widget>
+   <widget class="QLabel" name="labelForCorrectPositionedShips">
+    <property name="geometry">
+     <rect>
+      <x>236</x>
+      <y>340</y>
+      <width>171</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
    <zorder>graphicsView</zorder>
    <zorder>l1</zorder>
    <zorder>l2</zorder>
    <zorder>Ready</zorder>
+   <zorder>labelForCorrectPositionedShips</zorder>
   </widget>
   <widget class="QMenuBar" name="meni">
    <property name="geometry">
@@ -109,12 +123,19 @@
      <string>File</string>
     </property>
     <addaction name="quit"/>
+    <addaction name="separator"/>
+    <addaction name="restart"/>
    </widget>
    <addaction name="file"/>
   </widget>
   <action name="quit">
    <property name="text">
     <string>Close</string>
+   </property>
+  </action>
+  <action name="restart">
+   <property name="text">
+    <string>Restart</string>
    </property>
   </action>
  </widget>

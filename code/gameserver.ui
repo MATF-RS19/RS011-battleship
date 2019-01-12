@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Second</class>
- <widget class="QDialog" name="Second">
+ <class>Gameserver</class>
+ <widget class="QDialog" name="Gameserver">
   <property name="enabled">
    <bool>true</bool>
   </property>

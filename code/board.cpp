@@ -8,37 +8,49 @@
 #include <QDebug>
 #include <QGraphicsScene>
 #include <algorithm>
+#include <iostream>
 
 Board::Board()
 {
 
 }
 
-QList<Square *> Board::getSquares()
+QList<Square *> Board::getSquares() const
 {
-    return squares;
+    return m_squares;
 }
 
-void Board::placeSquares(int x,int y,int cols,int rows, bool r, QGraphicsScene *scene)
+void Board::placeSquares(int x, int y, int rows, int columns, bool isFirst, QGraphicsScene *scene)
 {
-    for (int i = 0; i < cols; i++){
-        createSquareColumn(x + i*20, y, rows, r, i, scene);
+    for (int i = 0; i < rows; i++){
+        for (int j = 0; j < columns; j++) {
+            Square* square = new Square();
+            square->setPos(x+i*20, y+j*20);
+            square->setPlaced(true);
+            square->setFirstBoard(isFirst);
+            square->setI(j);
+            square->setJ(i);
+            square->checkIfSquareIsOnBorder();
+            m_squares.append(square);
+            scene->addItem(square);
+        }
     }
 }
-
-void Board::clickedOn(int x1, int y1, int x2, int y2)
+//the function selects squares between given positions
+bool Board::selectedSquares(int x1, int y1, int x2, int y2)
 {
-    qDebug() << "i dalje";
     if ((x1 == x2) & (y1 != y2)) {
         int length = std::abs(y1 - y2);
         if (y1 > y2) {
             while(length >= 0) {
-                findSquare(x1, y1-length);
+                if(!findSquare(x1, y1-length))
+                    return false;
                 length--;
             }
         } else {
             while(length >= 0) {
-                findSquare(x1, y1+length);
+                if(!findSquare(x1, y1+length))
+                    return false;
                 length--;
             }
         }
@@ -46,39 +58,37 @@ void Board::clickedOn(int x1, int y1, int x2, int y2)
         int length = std::abs(x1 - x2);
         if (x1 > x2) {
             while (length >= 0) {
-                findSquare(x1 - length, y1);
+                if(!findSquare(x1 - length, y1))
+                    return false;
                 length--;
             }
         } else {
             while (length >= 0) {
-                findSquare(x1 + length, y1);
+                if(!findSquare(x1 + length, y1))
+                    return false;
                 length--;
             }
         }
     }
-     qDebug() << "i dalje";
+    return true;
 }
-
-void Board::findSquare(int i, int j)
+//the function finds squares and selects them
+bool Board::findSquare(int i, int j)
 {
-    for (auto& s : squares) {
+    for (auto& s : m_squares) {
         if ((s->getI() == i) & (s->getJ() == j)) {
+            if (s->getSelected()){
+                return false;
+            }
             s->setSelected(true);
         }
     }
+    return true;
 }
-
-void Board::createSquareColumn(int x, int y, int rows, bool r, int curr_i, QGraphicsScene *scene)
+//the function sets flag selected for all squares to false
+void Board::restartSelected()
 {
-    Q_UNUSED(r);
-    for(int i = 0; i < rows; i++) {
-        Square* square = new Square();
-        square->setPos(x, y+i*20);
-        square->setPlaced(true);
-        square->setI(i);
-        square->setJ(curr_i);
-        square->setPlacement(i, curr_i);
-        squares.append(square);
-        scene->addItem(square);
+    for(auto s : m_squares){
+        s->setSelected(false);
     }
 }

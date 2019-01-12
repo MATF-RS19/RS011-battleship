@@ -9,18 +9,20 @@
 #include <QGraphicsItem>
 #include <QDebug>
 #include "board.h"
+#define START_POSITION_X 240
+#define START_POSITION_Y 100
+#define UNIT_LENGTH 20
+#define SHIP_WIDTH 13
 
-Ship::Ship(QString name, int length) :
-    m_name(name), m_length(length), m_draged(false)
+Ship::Ship(int length) :
+    m_length(length), m_placed(false)
 {
-    setFlag(QGraphicsItem::ItemIsSelectable, true);
-    setFlag(QGraphicsItem::ItemIsMovable, true);
-    setAcceptedMouseButtons(Qt::LeftButton);
+
 }
 
-QRectF Ship::boundingRect() const
+QRectF Ship::boundingRect() const//positioning of the ship
 {
-    return QRectF(240+20*m_length, 100, 13, m_length*20);
+    return QRectF(START_POSITION_X+UNIT_LENGTH*m_length, START_POSITION_Y, SHIP_WIDTH, m_length*UNIT_LENGTH);
 }
 
 void Ship::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *)
@@ -31,13 +33,11 @@ void Ship::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
     int w = source.width();
     source = source.scaled(w/30, h/30);
     painter->setBrush(source);
-    painter->drawEllipse(240+20*m_length, 100, 13, m_length * 20);
-    // painter->translate(237, 80);
-
+    painter->drawEllipse(START_POSITION_X+UNIT_LENGTH*m_length, START_POSITION_Y, SHIP_WIDTH, m_length * UNIT_LENGTH);
 }
 
 void Ship::setAnchorPoint(const QPointF &anchorPoint) {
-    this->anchorPoint = anchorPoint;
+    this->m_anchorPoint = anchorPoint;
 }
 int Ship::getShipLength() const
 {
@@ -46,53 +46,37 @@ int Ship::getShipLength() const
 
 void Ship::setIsVertical(bool val)
 {
-    isVertical = val;
+    m_isVertical = val;
 }
 
-bool Ship::getIsVertical()
+bool Ship::getIsVertical() const
 {
-    return isVertical;
+    return m_isVertical;
+}
+void Ship::setPlacedShip()
+{
+    m_placed = true;
 }
 
-void Ship::rotationShip()
+bool Ship::getPlacedShip() const
 {
-
-    //this->setRotation(90);
+    return m_placed;
+}
+void Ship::rotationShip()//rotation of the ship by 90 degrees
+{
     QPointF offset = this->boundingRect().center();
-    QTransform transformation;
+    QTransform transformation = this->transform();
     transformation.translate(offset.x(), offset.y());
     transformation.rotate(90);
     transformation.translate(-offset.x(), -offset.y());
     this->setTransform(transformation);
-    /*
-        QPointF offset = gr->sceneBoundingRect().center();
-
-        QTransform transform;
-        transform.translate(offset.x(),offset.y());
-        transform.rotate(90);
-        transform.translate(-offset.x(),-offset.y());
-        gr->setTransform(transform);
-
-        scene->destroyItemGroup(gr);
-        scene->update();*/
 }
-void Ship::mousePressEvent(QGraphicsSceneMouseEvent *event)
+
+std::vector<int> Ship::getCoordinates() const
 {
-    setCursor(Qt::ClosedHandCursor);
-    QGraphicsRectItem::mousePressEvent(event);
+    return m_coordinates;
 }
-
-void Ship::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+void Ship::setCoordinates(std::vector<int> coords)
 {
-    m_draged = true;
-    QGraphicsRectItem::mouseMoveEvent(event);
+    m_coordinates = coords;
 }
-
-void Ship::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
-{
-    setCursor(Qt::OpenHandCursor);
-    qDebug() << this->pos();
-    QGraphicsRectItem::mouseReleaseEvent(event);
-
-}
-

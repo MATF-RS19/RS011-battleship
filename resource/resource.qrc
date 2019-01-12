@@ -4,5 +4,7 @@
         <file>background2.jpg</file>
         <file>metallic_background.jpg</file>
         <file>ship_texture.jpg</file>
+        <file>fire.png</file>
+        <file>miss.png</file>
     </qresource>
 </RCC>
