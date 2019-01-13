@@ -17,7 +17,9 @@ public:
     bool findSquare(int i, int j);
     void restartSelected();
 
+    void setNamePlayer(QString name);
 private:
+    QString m_namePlayer;
     QList<Square*> m_squares;
 };
 

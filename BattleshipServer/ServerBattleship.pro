@@ -1,15 +1,15 @@
 #-------------------------------------------------
 #
-# Project created by QtCreator 2018-12-20T22:12:38
+# Project created by QtCreator 2019-01-10T01:37:03
 #
 #-------------------------------------------------
 
-QT       += core gui testlib \
+QT       += core gui \
             network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = battleship-projekat
+TARGET = ServerBattleship
 TEMPLATE = app
 
 # The following define makes your compiler emit warnings if you use
@@ -23,30 +23,16 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
-CONFIG += c++11
 
 SOURCES += \
-        main.cpp \
-    mainwindow.cpp \
-    board.cpp \
-    ship.cpp \
-    square.cpp \
-    machine.cpp \
-    player.cpp \
-    gameserver.cpp
+    server.cpp \
+    main.cpp
 
 HEADERS += \
-    mainwindow.h \
-    board.h \
-    ship.h \
-    square.h \
-    machine.h \
-    player.h \
-    gameserver.h
+    server.h
 
 FORMS += \
-        main.ui \
-    gameserver.ui
+    server.ui
 
 RESOURCES += \
     ../resource/resource.qrc

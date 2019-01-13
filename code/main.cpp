@@ -2,13 +2,15 @@
 #include "gameserver.h"
 #include <QApplication>
 #include <QDebug>
+#include <QIcon>
 
-Gameserver *w;
+GameServer *w;
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    w = new Gameserver();
+    a.setWindowIcon(QIcon(":/icon1.png"));
+    w = new GameServer();
     w->show();
 
     return a.exec();

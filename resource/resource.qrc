@@ -6,5 +6,8 @@
         <file>ship_texture.jpg</file>
         <file>fire.png</file>
         <file>miss.png</file>
+        <file>radar.jpg</file>
+        <file>icon_radar.png</file>
+        <file>icon1.png</file>
     </qresource>
 </RCC>

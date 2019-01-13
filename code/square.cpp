@@ -4,7 +4,9 @@
 #include "gameserver.h"
 
 #include <QDebug>
-extern Gameserver* w;
+
+extern GameServer* w;
+
 Square::Square(QGraphicsItem *parent){
     Q_UNUSED(parent);
 
@@ -63,11 +65,19 @@ bool Square::getSelected() const
 void Square::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_UNUSED(event);
-    if(this->getFirstBoard()){//when clicked on player's board, for ship setting
-        w->m->pickedSquare(this);
-    }
-    else if (!this->getFirstBoard()  && w->m->getLock()){//when clicked on opponent's board and all ships are positioned, for attack
-        emit squareClicked(this->getI(), this->getJ(), this->pos());
+    if (w->getMode() == 2) {
+        if ( this->getFirstBoard()){
+            w->m_player->pickedSquare(this);
+        } else if( !this->getFirstBoard()){
+            emit squareClicked(this->getI(), this->getJ(), this->pos());
+        }
+    } else {
+        if(this->getFirstBoard()){//when clicked on player's board, for ship setting
+            w->m_player->pickedSquare(this);
+        }
+        else if (!this->getFirstBoard() && w->m_player->getLock()){//when clicked on opponent's board and all ships are positioned, for attack
+            emit squareClicked(this->getI(), this->getJ(), this->pos());
+        }
     }
 
 }

@@ -1,29 +1,46 @@
 #ifndef GAMESERVER_H
 #define GAMESERVER_H
 
-#include <QDialog>
 #include "mainwindow.h"
 
+#include <QDialog>
+#include <QTcpServer>
+#include <QHostAddress>
+#include <QJsonDocument>
+#include <QJsonObject>
+
 namespace Ui {
-class Gameserver;
+class GameServer;
 }
 
-class Gameserver : public QDialog
+class GameServer : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit Gameserver(QWidget *parent = 0);
-    ~Gameserver();
-    Main *m;
+    explicit GameServer(QWidget *parent = 0);
+    ~GameServer();
+
+    Main *m_player;
+
+    int getMode() const;
+
+    void keyPressEvent(QKeyEvent *e);
 
 private slots:
-    void on_Play_clicked();
-
-    void on_Close_clicked();
+    void onSinglePlayer();
+    void onTwoPlayers();
+    void onClose();
+    void enable();
 
 private:
-    Ui::Gameserver *ui;
+    Ui::GameServer *ui;
+
+    QString m_addr;
+    QString m_name;
+    int m_move = 1;
+    int m_count = 0;
+    int m_mode;
 };
 
 #endif // GAMESERVER_H

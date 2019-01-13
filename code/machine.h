@@ -1,6 +1,7 @@
 #ifndef MACHINE_H
 #define MACHINE_H
 #include <QPoint>
+#include <vector>
 
 class Machine
 {

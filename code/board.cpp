@@ -92,3 +92,8 @@ void Board::restartSelected()
         s->setSelected(false);
     }
 }
+
+void Board::setNamePlayer(QString name)
+{
+    m_namePlayer = name;
+}

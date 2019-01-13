@@ -1,9 +1,9 @@
 #include "gameserver.h"
 #include "ui_gameserver.h"
 
-Gameserver::Gameserver(QWidget *parent) :
+GameServer::GameServer(QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::Gameserver)//setting the background for the first window
+    ui(new Ui::GameServer)//setting the background for the first window
 {
     ui->setupUi(this);
     QPixmap pix(":/battleship1.jpg");
@@ -11,22 +11,85 @@ Gameserver::Gameserver(QWidget *parent) :
     QPalette palette;
     palette.setBrush(QPalette::Background, pix);
     this->setPalette(palette);
+
+    this->setWindowTitle("battleship");
+    ui->twoPlayers->setEnabled(false);
+    connect(ui->twoPlayers, SIGNAL(clicked(bool)), this, SLOT(onTwoPlayers()));
+//    connect(ui->singlePlayer, SIGNAL(clicked(bool)), this, SLOT(onSinglePlayer()));
+    connect(ui->close, SIGNAL(clicked(bool)), this, SLOT(close()));
+    connect(ui->lineEdit1, SIGNAL(textEdited(QString)), this, SLOT(enable()));
+    connect(ui->lineEdit3, SIGNAL(textEdited(QString)), this, SLOT(enable()));
+
 }
 
-Gameserver::~Gameserver()
+GameServer::~GameServer()
 {
     delete ui;
 }
 
-void Gameserver::on_Play_clicked()//hides the first window and shows the main window
+int GameServer::getMode() const
 {
-    hide();
-    m = new Main(this);
-    m->show();
-    m->init();
+    return m_mode;
 }
 
-void Gameserver::on_Close_clicked()//closes the first window
+void GameServer::keyPressEvent(QKeyEvent *e)
+{
+    if (e->key() != Qt::Key_Escape) {
+        QDialog::keyPressEvent(e);
+    } else {
+        e->ignore();
+    }
+}
+
+void GameServer::onSinglePlayer()
+{
+    m_mode = 1;
+    this->hide();
+
+    if (ui->lineEdit2->text().trimmed() != "")
+        m_name = ui->lineEdit2->text().trimmed();
+    else
+        m_name = "Player";
+
+    m_player = new Main();
+    m_player->singlePlayer(m_name, "Machine");
+    m_player->show();
+}
+
+void GameServer::onTwoPlayers()
+{
+    this->hide();
+    m_mode = 2;
+    m_player = new Main();
+    QHostAddress addr;
+    addr.setAddress(m_addr);
+    if (m_player->connectToGameServer(m_name, addr, 4242))
+        qDebug() << "Connected";
+    m_player->show();
+}
+
+void GameServer::onClose()//closes the first window
 {
     this->close();
 }
+
+void GameServer::enable()
+{
+    if (ui->lineEdit1->text().trimmed() != "") {
+        if (ui->lineEdit3->text().trimmed() != "") {
+            ui->twoPlayers->setEnabled(true);
+            m_name = ui->lineEdit1->text().trimmed();
+            m_addr = ui->lineEdit3->text().trimmed();
+        }
+    } else if (ui->lineEdit3->text().trimmed() != "") {
+        if (ui->lineEdit1->text().trimmed() != "") {
+            ui->twoPlayers->setEnabled(true);
+            m_name = ui->lineEdit1->text().trimmed();
+            m_addr = ui->lineEdit3->text().trimmed();
+        }
+    }
+    if (ui->lineEdit3->text().trimmed() == "" || ui->lineEdit1->text().trimmed() == "") {
+        ui->twoPlayers->setEnabled(false);
+    }
+}
+
