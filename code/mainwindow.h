@@ -28,6 +28,13 @@ public:
     void deinit();
     bool getLock() const;
 
+    void game();
+    void gameOverDesign(QString text);
+    void displayClickOnSquare(int x, int y, bool correctGuess, QString whoIsPlaying);
+    void connectSquaresToPlayersAttackFunction();
+    void disconnectSquaresToPlayersAttackFunction();
+    void machinesAttack();
+
     ~Main();
      QGraphicsScene *scene;
      Square *startSquare = nullptr;
@@ -36,6 +43,7 @@ public:
 private slots:
     void on_Ready_clicked();
     void restart();
+    void playersAttack(int i, int j, QPointF position);
 
 private:
     Ui::Main *ui;

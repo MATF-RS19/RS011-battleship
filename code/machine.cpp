@@ -6,7 +6,7 @@
 Machine::Machine()
 {
    m_matrixMachine = new std::vector<std::vector<bool>>(MAX_DIMENSION, std::vector<bool>(MAX_DIMENSION, false));
-   m_attackedSquares = new std::vector<QPoint>(MAX_DIMENSION*MAX_DIMENSION);
+   m_attackedSquares = new std::vector<QPoint>;
 
    m_firstGuessInARow = false;
    m_haveNewGuesses = false;
