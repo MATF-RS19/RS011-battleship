@@ -196,7 +196,7 @@ void Main::machinesAttack() {
         m_machine->setCorrectGuesses(correct + 1);
 
         // Green squares are drawn
-        displayClickOnSquare(x, y, true, "MACHINE");
+        displayClickOnSquare(true,currentSquare->pos());
 
         // If machine won, the game is stopped, and corresponding message is displayed
         if (m_machine->IWon()) {
@@ -209,7 +209,7 @@ void Main::machinesAttack() {
 
     } else {
         // Red squares are drawn
-        displayClickOnSquare(x, y, false, "MACHINE");
+        displayClickOnSquare(false, currentSquare->pos());
 
         // Now it's player's turn to play
         machines_turn = false;
@@ -277,7 +277,7 @@ void Main::pickedSquare(Square *square)
             }
         }
         length = std::abs(length)+1;
-        if(!m_lock && (isVerticalSetting || isHorizontalSetting)){//moving the ship
+        if(!m_lock && (isVerticalSetting || isHorizontalSetting) && length>=2 && length<=5){//moving the ship
             std::vector<int> coord(4);
             coord[0] = startSquare->getI();
             coord[1] = startSquare->getJ();
@@ -293,21 +293,21 @@ void Main::pickedSquare(Square *square)
 }
 
 // The function processes how the design of the scene changes when a square is clicked on
-void Main::displayClickOnSquare(int x, int y, bool correctGuess, QString whoIsPlaying) {
+void Main::displayClickOnSquare(bool correctGuess, QPointF position) {
 
-    int tableXBegining;
+    QGraphicsPixmapItem* picture = new QGraphicsPixmapItem();
+    QPixmap pixmap;
 
-    // If it's player's turn the squares are drawn on the second board, otherwise they're drawn on the first board
-    if (whoIsPlaying == "PLAYER")
-        tableXBegining = 370;
-    else if (whoIsPlaying == "MACHINE")
-        tableXBegining = 70;
+    if (correctGuess)
+        pixmap = QPixmap(":/fire.png").scaled(QSize(20, 20));
+    else
+        pixmap = QPixmap(":/miss.png").scaled(QSize(20, 20));
 
-    QGraphicsRectItem *rect = new QGraphicsRectItem();
-    rect->setRect(tableXBegining + y*20, 100 + x*20, 20, 20);
-    // If the move was a correct guess the square is green, otherwise it's red
-    correctGuess ? rect->setBrush(Qt::green) : rect->setBrush(Qt::red);
-    scene->addItem(rect);
+    picture->setPixmap(pixmap);
+    picture->setPos(position);
+    picture->show();
+
+    scene->addItem(picture);
 }
 
 // When the game is over, design of the scene changes and a corresponding message is displayed
@@ -417,9 +417,14 @@ void Main::onReadyClicked()//clicked when game is ready to start
             allPlaced = false;
         }
     }
-    if (allPlaced) {
+    if (allPlaced && withoutOverlap) {//all ships are placed and without overlap
         m_lock=1;//locks the positions of ships
         ui->ready->hide();
+
+        ui->labelForCorrectPositionedShips->setText("Ships are set correctly");
+        QPalette palette = ui->labelForCorrectPositionedShips->palette();
+        palette.setColor(ui->labelForCorrectPositionedShips->foregroundRole(), Qt::green);
+        ui->labelForCorrectPositionedShips->setPalette(palette);
 
         if (m_mode == 2) {
             m_obj.insert("name", m_name);
@@ -437,6 +442,14 @@ void Main::onReadyClicked()//clicked when game is ready to start
             // The game begins
             game();
         }
+    }
+    else{//not all ships are set or overlap
+        m_board1->restartSelected();
+        ui->labelForCorrectPositionedShips->setText("Ships are not set correctly");
+        QPalette palette = ui->labelForCorrectPositionedShips->palette();
+        palette.setColor(ui->labelForCorrectPositionedShips->foregroundRole(), Qt::red);
+        ui->labelForCorrectPositionedShips->setPalette(palette);
+
     }
 
 }
@@ -478,7 +491,7 @@ void Main::playersAttack(int i, int j, QPointF position) {
         m_player->setCorrectGuesses(correct + 1);
 
         // Green squares are drawn
-        displayClickOnSquare(i, j, true, "PLAYER");
+        displayClickOnSquare(true, position);
 
         // If the player won
         if (m_player->IWon()) {
@@ -496,7 +509,7 @@ void Main::playersAttack(int i, int j, QPointF position) {
         }
     } else {
         // If the player guessed wrong, red square is drawn on the board, and it's machine's turn to play now
-        displayClickOnSquare(i, j, false, "PLAYER");
+        displayClickOnSquare(false, position);
         players_turn = false;
         machines_turn = true;
     }
@@ -650,7 +663,7 @@ void Main::messageDisplay()
         qDebug() << "display" << m_obj;
         QPointF pos(m_obj.value("posx").toInt(), m_obj.value("posy").toInt());
         bool t = m_obj.value("value").toBool();
-//        displayClickOnSquare(t, pos);
+        displayClickOnSquare(t, pos);
         if (m_obj.contains("winner")) {
             m_obj.insert("endgame", m_obj.value("winner").toString());
         } else {
@@ -679,7 +692,7 @@ void Main::messageDisplay()
         findPositionOfOpponentsAttack(i, j);
         QPointF pos(m_posAttack);
         bool t = m_obj.value("value").toBool();
-
+        displayClickOnSquare(t, pos);
     }
 
 }

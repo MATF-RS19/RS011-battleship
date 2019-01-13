@@ -15,7 +15,7 @@ GameServer::GameServer(QWidget *parent) :
     this->setWindowTitle("battleship");
     ui->twoPlayers->setEnabled(false);
     connect(ui->twoPlayers, SIGNAL(clicked(bool)), this, SLOT(onTwoPlayers()));
-//    connect(ui->singlePlayer, SIGNAL(clicked(bool)), this, SLOT(onSinglePlayer()));
+    connect(ui->singlePlayer, SIGNAL(clicked(bool)), this, SLOT(onSinglePlayer()));
     connect(ui->close, SIGNAL(clicked(bool)), this, SLOT(close()));
     connect(ui->lineEdit1, SIGNAL(textEdited(QString)), this, SLOT(enable()));
     connect(ui->lineEdit3, SIGNAL(textEdited(QString)), this, SLOT(enable()));

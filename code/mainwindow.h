@@ -39,7 +39,7 @@ public:
 
     void moveShip(const QPointF startPoint, int length, bool isVertical, std::vector<int> coords) const;
     void pickedSquare(Square* square);
-    void displayClickOnSquare(int x, int y, bool correctGuess, QString whoIsPlaying);
+    void displayClickOnSquare(bool correctGuess, QPointF position);
     void gameOverDesign(QString text);
 
     void deinit();

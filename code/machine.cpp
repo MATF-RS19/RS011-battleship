@@ -21,7 +21,14 @@ Machine::Machine()
    m_wentLeft = false;
    m_wentRight = false;
 
-   bool k = initMachine();
+   while(1){//until machine is initialized without overlap
+       bool successInit = initMachine();
+       if(successInit)
+           break;
+       else{
+           resetInit();
+       }
+   }
 }
 
 bool Machine::getValueOnPosition(int x, int y) const
@@ -116,13 +123,14 @@ bool Machine::initMachine()//initialization of the matrix which preserves the po
         }
     }
       //print the matrix value for test
-      for(int i = 0; i < MAX_DIMENSION; i++){
-          for(int j = 0; j < MAX_DIMENSION; j++){
-              std::cout << " "<< m_matrixMachine->at(i).at(j);
-          }
-          std::cout <<std::endl;
-      }
-
+    if(withoutOverlap){
+        for(int i = 0; i < 10; i++){
+            for(int j = 0; j < 10; j++){
+                std::cout << " "<< m_matrixMachine->at(i).at(j);
+            }
+            std::cout <<std::endl;
+        }
+    }
      return withoutOverlap;
 }
 

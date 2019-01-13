@@ -66,16 +66,18 @@ void Square::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_UNUSED(event);
     if (w->getMode() == 2) {
-        if ( this->getFirstBoard()){
+        if ( this->getFirstBoard()){//when clicked on player's board, for ship setting
             w->m_player->pickedSquare(this);
-        } else if( !this->getFirstBoard()){
+        } else if( !this->getFirstBoard() && !this->getAttacked()){//when clicked on square that was not attacked, on opponent's board, for attack
+            this->setAttacked();
             emit squareClicked(this->getI(), this->getJ(), this->pos());
         }
     } else {
         if(this->getFirstBoard()){//when clicked on player's board, for ship setting
             w->m_player->pickedSquare(this);
-        }
-        else if (!this->getFirstBoard() && w->m_player->getLock()){//when clicked on opponent's board and all ships are positioned, for attack
+        }//when clicked on square that was not attacked, on opponent's board and all ships are positioned, for attack
+        else if (!this->getFirstBoard() && w->m_player->getLock() && !this->getAttacked()){
+            this->setAttacked();
             emit squareClicked(this->getI(), this->getJ(), this->pos());
         }
     }
