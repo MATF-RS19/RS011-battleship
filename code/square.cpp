@@ -68,8 +68,7 @@ void Square::mousePressEvent(QGraphicsSceneMouseEvent *event)
     if (w->getMode() == 2) {
         if ( this->getFirstBoard()){//when clicked on player's board, for ship setting
             w->m_player->pickedSquare(this);
-        } else if( !this->getFirstBoard() && !this->getAttacked()){//when clicked on square that was not attacked, on opponent's board, for attack
-            this->setAttacked();
+        } else if(!this->getFirstBoard()){//when clicked on square that was not attacked, on opponent's board, for attack
             emit squareClicked(this->getI(), this->getJ(), this->pos());
         }
     } else {
@@ -111,6 +110,7 @@ void Square::setSelected(bool b)
 {
     m_selected = b;
 }
+
 void Square::checkIfSquareIsOnBorder() {
     if (m_i == 0 && m_j == 0) {
         m_borderSquares["topLeftCorner"] = true;

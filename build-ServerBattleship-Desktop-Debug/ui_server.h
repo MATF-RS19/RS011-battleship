@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'server.ui'
 **
-** Created by: Qt User Interface Compiler version 5.6.1
+** Created by: Qt User Interface Compiler version 5.9.5
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -55,9 +55,9 @@ public:
 
     void retranslateUi(QDialog *Server)
     {
-        Server->setWindowTitle(QApplication::translate("Server", "Dialog", 0));
+        Server->setWindowTitle(QApplication::translate("Server", "Dialog", Q_NULLPTR));
         label->setText(QString());
-        button->setText(QApplication::translate("Server", "Quit", 0));
+        button->setText(QApplication::translate("Server", "Quit", Q_NULLPTR));
         status->setText(QString());
     } // retranslateUi
 

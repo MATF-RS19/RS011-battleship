@@ -96,16 +96,18 @@ void Server::handle()
     //  Because we allow only two players to play the game we have to set up
     //  variables for each one of the players so we can distinguish players
     //  based on their socket descriptors.
-    if (sd1 == 0) {
-        sd1 = sock->socketDescriptor();
-        sock1 = new QTcpSocket(sock);
-        sock1->setSocketDescriptor(sd1, QAbstractSocket::ConnectedState,
-                                   QIODevice::ReadWrite);
-    } else if (sd2 == 0 && sd1 != 0 && sd1 != sock->socketDescriptor()) {
-        sd2 = sock->socketDescriptor();
-        sock2 = new QTcpSocket(sock);
-        sock2->setSocketDescriptor(sd2, QAbstractSocket::ConnectedState,
-                                   QIODevice::ReadWrite);
+    if (m_quit == 2) {
+        if (sd1 == 0) {
+            sd1 = sock->socketDescriptor();
+            sock1 = new QTcpSocket(sock);
+            sock1->setSocketDescriptor(sd1, QAbstractSocket::ConnectedState,
+                                       QIODevice::ReadWrite);
+        } else if (sd2 == 0 && sd1 != 0 && sd1 != sock->socketDescriptor()) {
+            sd2 = sock->socketDescriptor();
+            sock2 = new QTcpSocket(sock);
+            sock2->setSocketDescriptor(sd2, QAbstractSocket::ConnectedState,
+                                       QIODevice::ReadWrite);
+        }
     }
 
     //  For communication between server and clients we are using QJsonDocuments
@@ -127,7 +129,6 @@ void Server::handle()
         sock1->write(o.toJson());
         sock2->write(o.toJson());
         m_ready = 0;
-        return;
     }
 
     if (m_obj.contains("ready")) {
@@ -207,9 +208,10 @@ void Server::read(QTcpSocket *sock)
 //  to both sockets of our players.
 void Server::turn()
 {
-    qDebug() << "turn " << m_obj;
+    qDebug() << "turn1 " << m_obj;
     QJsonDocument o(m_obj);
     sock1->write(o.toJson());
+    qDebug() << "turn2 " << m_obj;
     sock2->write(o.toJson());
 }
 
@@ -224,7 +226,7 @@ void Server::hit()
     }
 
     m_obj.insert("display", m_obj.value("ph"));
-    m_obj.insert("value", m_obj.value("hit").toBool());
+    m_obj.insert("value", m_obj.value("hit").toInt());
     m_obj.remove("check");
     m_obj.remove("hit");
     m_obj.remove("ph");
@@ -255,8 +257,6 @@ void Server::check(QTcpSocket *sock)
 //  descriptors to 0 so server could receive new connections.
 void Server::end()
 {
-    sd1 = 0;
-    sd2 = 0;
     m_count = 0;
     m_obj.remove("next");
     m_obj.remove("now");
@@ -275,41 +275,52 @@ void Server::end()
 //  sockets for players and set them to nullptr.
 void Server::done()
 {
-    qDebug() << "done " << m_obj;
-    ui->status->setText("There are two open spots for playing");
-    if (m_obj.contains("quit")) {
-        if (m_obj.value("quit") == m_name1) {
-            disconnect(sock2, SIGNAL(aboutToClose()), sock2, SLOT(deleteLater()));
-            sd2 = 0;
-            sock2 = nullptr;
-        } else {
-            disconnect(sock1, SIGNAL(aboutToClose()), sock1, SLOT(deleteLater()));
+    qDebug() << "GAME FINISHED";
+    qDebug() << "socket descriptors " << sd1 << sd2;
+}
+
+
+//  If QJsonObject contains value "quit" we have to deinit
+//  values of sock1, sock2, sd1, sd2, m_quit and m_count.
+void Server::quit(QTcpSocket *sock)
+{
+    qDebug() << "quit" << m_obj;
+    QJsonDocument o(m_obj);
+    m_quit--;
+    qDebug() << "sd trenutni!!!!!!!" << sock->socketDescriptor();
+    qDebug() << "socket descriptors2" << sd1 << sd2 << m_quit;
+    if (sock->socketDescriptor() == sd1) {
+        if (m_quit == 1) {
+            connect(sock1, SIGNAL(disconnected()), sock1, SLOT(deleteLater()));
+            sd1 = 0;
+            sock1 = nullptr;
+            QJsonDocument o(m_obj);
+            sock2->write(o.toJson());
+        } else if (m_quit == 0) {
+            connect(sock1, SIGNAL(disconnected()), sock1, SLOT(deleteLater()));
             sd1 = 0;
             sock1 = nullptr;
         }
-        m_obj.remove("quit");
-        m_obj.remove("done");
-    } else {
-        disconnect(sock1, SIGNAL(aboutToClose()), sock1, SLOT(deleteLater()));
-        disconnect(sock2, SIGNAL(aboutToClose()), sock2, SLOT(deleteLater()));
-        sock1 = nullptr;
-        sock2 = nullptr;
-    }
-}
-
-void Server::quit(QTcpSocket *sock)
-{
-    qDebug() << m_obj;
-    QJsonDocument o(m_obj);
-    if (sock->socketDescriptor() == sd1) {
-        disconnect(sock1, SIGNAL(disconnected()), sock1, SLOT(deleteLater()));
-        sd1 = 0;
-        sock1 = nullptr;
-        sock2->write(o.toJson());
     } else if (sock->socketDescriptor() == sd2) {
-        disconnect(sock2, SIGNAL(disconnected()), sock2, SLOT(deleteLater()));
-        sd2 = 0;
-        sock2 = nullptr;
-        sock1->write(o.toJson());
+        if (m_quit == 1) {
+            connect(sock1, SIGNAL(disconnected()), sock1, SLOT(deleteLater()));
+            sd2 = 0;
+            sock2 = nullptr;
+            QJsonDocument o(m_obj);
+            sock1->write(o.toJson());
+        } else if (m_quit == 0) {
+            connect(sock2, SIGNAL(disconnected()), sock2, SLOT(deleteLater()));
+            sd2 = 0;
+            sock2 = nullptr;
+        }
     }
+    if (m_quit == 0) {
+        ui->status->setText("There are two open spots for playing");
+        sock1 = nullptr;
+        sock2 = nullptr;
+        m_name1 = "";
+        m_name2 = "";
+        m_count = 0;
+    }
+    qDebug() << "socket descriptors3" << sd1 << sd2 << m_quit;
 }

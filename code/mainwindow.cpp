@@ -52,10 +52,13 @@ Main::~Main()
     delete ui;
 }
 
+//  When button "Two Players" is clicked we need to connect our socket
+//  to the server with IP address that we collect from lineEdit in dialog.
+//  We initialize player, boards and ships, and we connect our socket
+//  to slot processMessage whenever signal readyRead() is emited.
 bool Main::connectToGameServer(QString name, QHostAddress address, int port)
 {
     m_mode = 2;
-    m_socket = new QTcpSocket(nullptr);
     m_player = new Player(m_name);
     m_name = name;
     m_opponent = "Player 2";
@@ -77,6 +80,9 @@ bool Main::connectToGameServer(QString name, QHostAddress address, int port)
     return m_socket->waitForConnected(30000);
 }
 
+//  When button "Single Player" is clicked in dialog we initialize
+//  player and machine, boards and ships, and connect button with
+//  slots.
 void Main::singlePlayer(QString name, QString opponent)
 {
     m_name = name;
@@ -111,6 +117,8 @@ void Main::drawScene()
     ui->graphicsView->setScene(this->scene);
     ui->graphicsView->setLineWidth(Qt::AlignTop | Qt::AlignLeft);
 
+    m_socket = new QTcpSocket(nullptr);
+
     QGraphicsRectItem *r1 = new QGraphicsRectItem();
     r1->setRect(59, 99, 201, 201);
     scene->addItem(r1);
@@ -119,6 +127,7 @@ void Main::drawScene()
     scene->addItem(r2);
 }
 
+//  Initializing of the boards.
 void Main::drawBoards()
 {
     m_board1 = new Board();
@@ -129,6 +138,7 @@ void Main::drawBoards()
     m_board2->placeSquares(390, 100, 10, 10, false, scene);
 }
 
+//  Initializing ships for the player and adding them to the scene.
 void Main::drawShips()
 {
     QGraphicsScene *sc = ui->graphicsView->scene();
@@ -321,6 +331,12 @@ void Main::gameOverDesign(QString text)
         scene->items().at(k)->setEnabled(false);
     }
 
+    ui->alfabet1->hide();
+    ui->alfabet2->hide();
+    ui->numbers1->hide();
+    ui->numbers2->hide();
+    ui->labelForCorrectPositionedShips->hide();
+    ui->label->hide();
     // Ready button is disabled
     ui->ready->setEnabled(false);
 
@@ -338,7 +354,7 @@ void Main::gameOverDesign(QString text)
     brush.setStyle(Qt::SolidPattern);
     brush.setColor(Qt::white);
     panel2->setBrush(brush);
-    panel2->setOpacity(0.85);
+    panel2->setOpacity(0.95);
     scene->addItem(panel2);
 
     // Corresponding message is displayed
@@ -375,6 +391,8 @@ void Main::disconnectSquaresToPlayersAttackFunction()
     }
 }
 
+//  Enables mousePressEvents on board2 which represents
+//  board of the oppoenent.
 void Main::enableMove()
 {
     qDebug() << "move " << m_name;
@@ -382,9 +400,10 @@ void Main::enableMove()
     for (auto square : squares) {
         connect(square, SIGNAL(squareClicked(int, int, QPointF)), this, SLOT(playMove(int, int, QPointF)));
     }
-    return;
 }
 
+//  Disables mousePressEvents on board2 which represents
+//  board of the opponent.
 void Main::disableMove()
 {
     qDebug() << "end move " << m_name;
@@ -392,7 +411,6 @@ void Main::disableMove()
     for (auto square : squares) {
         disconnect(square, SIGNAL(squareClicked(int, int, QPointF)), this, SLOT(playMove(int, int, QPointF)));
     }
-    return;
 }
 
 bool Main::getLock() const
@@ -426,6 +444,8 @@ void Main::onReadyClicked()//clicked when game is ready to start
         palette.setColor(ui->labelForCorrectPositionedShips->foregroundRole(), Qt::green);
         ui->labelForCorrectPositionedShips->setPalette(palette);
 
+        //  If two players are playing then we need to start the communication between
+        //  server and two players. We insert players na
         if (m_mode == 2) {
             m_obj.insert("name", m_name);
             m_obj.insert("ready", m_name);
@@ -464,6 +484,7 @@ void Main::restart()
         ui->alfabet1->show();
         ui->alfabet2->show();
     }
+    ui->labelForCorrectPositionedShips->clear();
     deinit();
     m_finished = false;
     if (m_lock == 1) {
@@ -501,7 +522,7 @@ void Main::playersAttack(int i, int j, QPointF position) {
             game_over = true;
 
             // Player's actions no longer have any effect on the game
-            disableMove();
+            disconnectSquaresToPlayersAttackFunction();
 
             // The message is written on the screen
             gameOverDesign("YOU WON!");
@@ -517,6 +538,7 @@ void Main::playersAttack(int i, int j, QPointF position) {
     loop.exit();
 }
 
+//  When signal squareClicked(int, int, QPoint) in mousePressEvent is emited
 void Main::playMove(int i, int j, QPointF position)
 {
     qDebug() << "playMove" << m_obj << m_name;
@@ -533,6 +555,8 @@ void Main::playMove(int i, int j, QPointF position)
     qDebug() << "end playMove" << m_obj;
 }
 
+//  This function processes each message socket receives and
+//  depending on the message appropriate function is called.
 void Main::processMessage()
 {
     QTcpSocket *socket = qobject_cast<QTcpSocket*>(sender());
@@ -543,7 +567,6 @@ void Main::processMessage()
     if (m_obj.contains("wait")) {
         QJsonDocument o(m_obj);
         m_socket->write(o.toJson());
-        return;
     }
     if (m_obj.contains("startgame")) {
         messageStartGame();
@@ -573,30 +596,45 @@ void Main::processMessage()
     qDebug() << "end processMessage";
 }
 
+//  When quit is clicked in menu bar then we write to socket
+//  new message and disconnect our socket.
 void Main::closeForTwoPlayers()
 {
     QJsonObject tmp;
     tmp.insert("quit", m_name);
     QJsonDocument o(tmp);
     m_socket->write(o.toJson());
-    disconnect(m_socket, SIGNAL(aboutToClose()), this, SLOT(close()));
+    connect(m_socket, SIGNAL(disconnected()), this, SLOT(close()));
     this->close();
 }
 
-bool Main::checkBoard(int i, int j, Board *board)
+//  This function checks if square in board which was attacked contains
+//  a part of any ship in that square and returns appropriate number.
+int Main::checkBoard(int i, int j, Board *board)
 {
+    //  0 - it was already attacked
+    //  when it wasn't already attacked
+    //      1 - it was a hit
+    //      2 - it was a miss
     auto temp = board->getSquares();
     for (auto t: temp) {
         if (t->getI() == i && t->getJ() == j) {
-            if (t->getSelected() == true) {
-                m_countSinked++;
-                return true;
+            if (t->getAttacked() == false) {
+                if (t->getSelected() == true) {
+                    t->setAttacked();
+                    m_countSinked++;
+                    return 1;
+                }
+            } else {
+                return 0;
             }
         }
     }
-    return false;
+    return 2;
 }
 
+//  This function finds position of specific square in players board
+//  because we use it to display where opponent attacked.
 void Main::findPositionOfOpponentsAttack(int i, int j)
 {
     auto board = m_board1->getSquares();
@@ -606,6 +644,9 @@ void Main::findPositionOfOpponentsAttack(int i, int j)
         }
 }
 
+//  If message contains value "startgame" we need to determine who is
+//  playing first and to insert new values into QJsonObject and write
+//  to the socket.
 void Main::messageStartGame()
 {
     qDebug() << "startgame" << m_obj;
@@ -617,23 +658,28 @@ void Main::messageStartGame()
     m_socket->write(o.toJson());
 }
 
+//  If message contains value "turn" then a message is shown in label
+//  so that each player knows whos turn it is, and we enable or disable
+//  players to click on opponents board depending if it's theirs turn.
 void Main::messageTurn()
 {
     qDebug() << "turn " << m_obj << m_name;
+
     if (m_obj.value("turn").toString() == m_name) {
         ui->label->setText("It's your turn to play " + m_name +"!");
         enableMove();
-        return;
     }
     if (m_obj.value("turn").toString() != m_name) {
         ui->label->setText("It's opponents turn to play!");
         if (m_clicked == false)
             m_clicked = true;
         disableMove();
-        return;
     }
 }
 
+//  If message contains value "check" that means we have values of
+//  opponents attack so we check if it was a hit or a miss and we
+//  insert new values into the QJsonObject and write it to the socket.
 void Main::messageCheck()
 {
     qDebug() << "check " << m_obj << m_name;
@@ -644,7 +690,7 @@ void Main::messageCheck()
         int j = m_obj.value("j").toInt();
         QPointF pos(m_obj.value("posx").toInt(), m_obj.value("posy").toInt());
         qDebug() << i << j << pos;
-        bool t = checkBoard(i, j, m_board1);
+        int t = checkBoard(i, j, m_board1);
         if (m_countSinked == 14) {
             m_obj.insert("sinked", 14);
         }
@@ -656,20 +702,31 @@ void Main::messageCheck()
     }
 }
 
+//  If message contains value "display" then we are displaying value
+//  of the attack on ours board and on opponents board. Based on the
+//  value of the attack we determine who is playing next and insert
+//  new values in QJsonObject and write it to the socket. If opponent
+//  is a winner then we insert the value "endgame" and write it to
+//  the socket.
 void Main::messageDisplay()
 {
     qDebug() << "display " << m_obj;
     if (m_obj.value("display").toString() == m_name) {
         qDebug() << "display" << m_obj;
         QPointF pos(m_obj.value("posx").toInt(), m_obj.value("posy").toInt());
-        bool t = m_obj.value("value").toBool();
-        displayClickOnSquare(t, pos);
+        int t = m_obj.value("value").toInt();
+        if (t != 0) {
+            if (t == 1)
+                displayClickOnSquare(true, pos);
+            else
+                displayClickOnSquare(false, pos);
+        }
         if (m_obj.contains("winner")) {
             m_obj.insert("endgame", m_obj.value("winner").toString());
         } else {
-            if (t == true)
+            if (t == 1)
                 m_obj.insert("turn", m_obj.value("now").toString());
-            else {
+            else if (t == 2 || t == 0){
                 m_obj.insert("turn", m_obj.value("next").toString());
                 m_obj.insert("opponent", m_obj.value("now").toString());
             }
@@ -691,12 +748,19 @@ void Main::messageDisplay()
         int j = m_obj.value("j").toInt();
         findPositionOfOpponentsAttack(i, j);
         QPointF pos(m_posAttack);
-        bool t = m_obj.value("value").toBool();
-        displayClickOnSquare(t, pos);
+        int t = m_obj.value("value").toInt();
+        if (t != 0) {
+            if (t == 1)
+                displayClickOnSquare(true, pos);
+            else
+                displayClickOnSquare(false, pos);
+        }
     }
-
 }
 
+//  If message contains value "endgame" then we know winner
+//  and loser, and we display messages on the scene for each
+//  player. When it's done we write it to the socket.
 void Main::messageEndGame()
 {
     QJsonObject end;
@@ -712,13 +776,12 @@ void Main::messageEndGame()
     m_socket->write(o.toJson());
 }
 
+
+//  If message contains value quit and the game it's not over
+//  then we display message for player who won.
 void Main::messageQuit()
 {
     if (m_obj.value("quit") != m_name) {
         gameOverDesign("YOU WON!");
-        m_obj.insert("done", true);
-        QJsonDocument o(m_obj);
-        m_socket->write(o.toJson());
     }
 }
-

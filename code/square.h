@@ -29,15 +29,13 @@ public:
     void setAttacked();
     void setSelected(bool b);
 
-    int x1, x2, y1, y2;
-    int count = 2;
-
     void checkIfSquareIsOnBorder();
     bool squareIsOnBorder();
     bool checkIfSquareIs(QString border);
 
 signals:
     void squareClicked(int i, int j, QPointF position);
+
 private:
     bool m_placed;
     bool m_FirstBoard;
@@ -45,6 +43,8 @@ private:
     int m_j;
     bool m_attacked;
     bool m_selected;
+    bool m_hasFire;
+    bool m_hasWater;
 
     QMap<QString, bool> m_borderSquares;
 };

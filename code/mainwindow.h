@@ -55,6 +55,9 @@ public:
     Square *startSquare = nullptr;
     Square *endSquare = nullptr;
 
+    Board *m_board1;
+    Board *m_board2;
+
 private slots:
     void onReadyClicked();
     void restart();
@@ -65,8 +68,6 @@ private slots:
 
 private:
     Ui::Main *ui;
-    Board *m_board1;
-    Board *m_board2;
     Player *m_player;
     Machine *m_machine;
     QString m_name;
@@ -82,7 +83,7 @@ private:
     QPointF m_posAttack;
     bool m_finished;
 
-    bool checkBoard(int i, int j, Board *board);
+    int checkBoard(int i, int j, Board *board);
     void findPositionOfOpponentsAttack(int i, int j);
 
     void messageStartGame();

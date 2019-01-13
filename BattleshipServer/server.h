@@ -54,6 +54,7 @@ private:
 
     int m_count = 0;                //  counter of how many players are in the game
     int m_ready = 0;                //  counter of how many players are ready
+    int m_quit = 2;                 //  counter of how many players have exited the game
 };
 
 #endif // SERVER_H
