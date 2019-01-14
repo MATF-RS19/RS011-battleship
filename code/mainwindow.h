@@ -51,6 +51,12 @@ public:
 
     bool getLock() const;
 
+    void delay();
+    void machineGuessedCorrectly(int x, int y, QPoint* currentPoint);
+    void machineGuessedWrong(int x, int y);
+    void newGuessIsTheLastElementFromNextTrys();
+    void fillNextTrys(bool setUp, bool setDown, bool setLeft, bool setRight, int x, int y);
+
     QGraphicsScene *scene;
     Square *startSquare = nullptr;
     Square *endSquare = nullptr;

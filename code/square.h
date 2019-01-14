@@ -6,6 +6,8 @@
 #include <QObject>
 #include <QWidget>
 
+// For this class we got the inspiration from the internet (git hub - battleship)
+
 class Square : public QObject, public QGraphicsRectItem
 {
     Q_OBJECT

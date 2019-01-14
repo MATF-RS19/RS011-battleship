@@ -24,6 +24,12 @@ bool game_over = false;
 bool players_turn = true;
 bool machines_turn = false;
 Square *currentSquare;
+Square *originalSquare;
+
+std::vector<QPoint> nextTrys;
+QPoint firstGuess;
+
+QPoint newGuess;
 
 Main::Main(QWidget *parent) :
     QMainWindow(parent),
@@ -168,64 +174,601 @@ void Main::game()
     }
 }
 
+// Function processes machine's attack
 void Main::machinesAttack() {
 
-    // Random square is chosen to be attacked
-    int x = qrand() % 10;
-    int y = qrand() % 10;
+    int x, y;
+    QPoint *currentPoint;
 
-    QPoint *currentPoint = new QPoint(x, y);
-
-    // If that square is already attacked, find other that is not
-    while (m_machine->givenSquareIsAlreadyAttacked(*currentPoint)) {
+    // if the machine doesn't have next square to attack
+    if (!m_machine->getHaveNewGuesses()) {
+        // machine chooses random square
         x = qrand() % 10;
         y = qrand() % 10;
+
         currentPoint = new QPoint(x, y);
+
+        // if that square is already attacked, find one that isn't
+        while (m_machine->givenSquareIsAlreadyAttacked(*currentPoint)) {
+            x = qrand() % 10;
+            y = qrand() % 10;
+            currentPoint = new QPoint(x, y);
+        }
+
+        // Chosen square is added to already attacked
+        std::vector<QPoint> *attackedSquares = m_machine->getAttackedSquares();
+        attackedSquares->push_back(*currentPoint);
+        m_machine->setAttackedSquares(*attackedSquares);
+    } else {
+        // if the machine has next square to attack
+        x = newGuess.x();
+        y = newGuess.y();
+
+        // if that square is already attacked, find one that isn't
+        while (m_machine->givenSquareIsAlreadyAttacked(newGuess)) {
+
+            // if the machine hasn't found the direction od the ship, take the next square from the list of next trys
+            if (!m_machine->getGoUp() && !m_machine->getGoDown() && !m_machine->getGoLeft() && !m_machine->getGoRight()) {
+
+                int n = nextTrys.size();
+                if (n > 0) {
+                    newGuess = nextTrys.at(n-1);
+                    x = newGuess.x();
+                    y = newGuess.y();
+                    nextTrys.pop_back();
+                } else {
+                    // if the list is empty, the machines doesn't have new guesses, now it randomly picks squares
+                    m_machine->setHaveNewGuesses(false);
+                    m_machine->setIsFirstGuessInARow(false);
+
+                    x = qrand() % 10;
+                    y = qrand() % 10;
+
+                    QPoint *p = new QPoint(x, y);
+                    newGuess = *p;
+                }
+              // if the direction of the ship was left-right, and machine was moving to the right
+            } else if (m_machine->getGoRight()) {
+                // stop the machine from going right any further
+                m_machine->setGoRight(false);
+                // machine went rignt
+                m_machine->setWentRight(true);
+                // if the machine didn't go left and the original square isn't left border, top left corner or bottom left corner
+                if (!m_machine->getWentLeft() && !originalSquare->checkIfSquareIs("leftBorder") && !originalSquare->checkIfSquareIs("topLeftCorner") && !originalSquare->checkIfSquareIs("bottomLeftCorner")) {
+                    // set the machine to go left from the original point
+                    m_machine->setGoLeft(true);
+                    newGuess.setX(firstGuess.x()-1);
+                    newGuess.setY(firstGuess.y());
+                    x = newGuess.x();
+                    y = newGuess.y();
+                } else {
+                    // if the machine went left, empty the list of next trys and pick a random square
+                    int n = nextTrys.size();
+                    while (n != 0) {
+                        nextTrys.pop_back();
+                        n--;
+                    }
+                    m_machine->setHaveNewGuesses(false);
+                    m_machine->setIsFirstGuessInARow(false);
+
+                    x = qrand() % 10;
+                    y = qrand() % 10;
+
+                    QPoint *p = new QPoint(x, y);
+                    newGuess = *p;
+                }
+                // if the direction of the ship was left-right, and machine was moving to the left
+            } else if (m_machine->getGoLeft()) {
+                // stop the machine from going left any further
+                m_machine->setGoLeft(false);
+                // machine went left
+                m_machine->setWentLeft(true);
+                // if the machine didn't go right and the original square isn't right border, top right corner or bottom right corner
+                if (!m_machine->getWentRight() && !originalSquare->checkIfSquareIs("rightBorder") && !originalSquare->checkIfSquareIs("topRightCorner") && !originalSquare->checkIfSquareIs("bottomRightCorner")) {
+                    // set the machine to go right from the original point
+                    m_machine->setGoRight(true);
+                    newGuess.setX(firstGuess.x()+1);
+                    newGuess.setY(firstGuess.y());
+                    x = newGuess.x();
+                    y = newGuess.y();
+                } else {
+                    // if the machine went right, empty the list of next trys and pick a random square
+                    int n = nextTrys.size();
+                    while (n != 0) {
+                        nextTrys.pop_back();
+                        n--;
+                    }
+                    m_machine->setHaveNewGuesses(false);
+                    m_machine->setIsFirstGuessInARow(false);
+
+                    x = qrand() % 10;
+                    y = qrand() % 10;
+
+                    QPoint *p = new QPoint(x, y);
+                    newGuess = *p;
+                }
+                // if the direction of the ship was up-down, and machine was moving up
+            } else if (m_machine->getGoUp()) {
+                // stop the machine from going up any further
+                m_machine->setGoUp(false);
+                // machine went up
+                m_machine->setWentUp(true);
+                // if the machine didn't go down and the original square isn't bottom border, bottom left corner or bottom right corner
+                if (!m_machine->getWentDown() && !originalSquare->checkIfSquareIs("bottomBorder") && !originalSquare->checkIfSquareIs("bottomLeftCorner") && !originalSquare->checkIfSquareIs("bottomRightCorner")) {
+                    // set the machine to go down from the original point
+                    m_machine->setGoDown(true);
+                    newGuess.setX(firstGuess.x());
+                    newGuess.setY(firstGuess.y()+1);
+                    x = newGuess.x();
+                    y = newGuess.y();
+                } else {
+                    // if the machine went down, empty the list of next trys and pick a random square
+                    int n = nextTrys.size();
+                    while (n != 0) {
+                        nextTrys.pop_back();
+                        n--;
+                    }
+                    m_machine->setHaveNewGuesses(false);
+                    m_machine->setIsFirstGuessInARow(false);
+
+                    x = qrand() % 10;
+                    y = qrand() % 10;
+
+                    QPoint *p = new QPoint(x, y);
+                    newGuess = *p;
+                }
+                // if the direction of the ship was up-down, and machine was moving down
+            } else if (m_machine->getGoDown()) {
+                // stop the machine from going down any further
+                m_machine->setGoDown(false);
+                // machine went down
+                m_machine->setWentDown(true);
+                // if the machine didn't go up and the original square isn't top border, top left corner or top right corner
+                if (!m_machine->getWentUp() && !originalSquare->checkIfSquareIs("topBorder") && !originalSquare->checkIfSquareIs("topLeftCorner") && !originalSquare->checkIfSquareIs("topRightCorner")) {
+                    // set the machine to go up from the original point
+                    m_machine->setGoUp(true);
+                    newGuess.setX(firstGuess.x());
+                    newGuess.setY(firstGuess.y()-1);
+                    x = newGuess.x();
+                    y = newGuess.y();
+                } else {
+                    // if the machine went up, empty the list of next trys and pick a random square
+                    int n = nextTrys.size();
+                    while (n != 0) {
+                        nextTrys.pop_back();
+                        n--;
+                    }
+                    m_machine->setHaveNewGuesses(false);
+                    m_machine->setIsFirstGuessInARow(false);
+
+                    x = qrand() % 10;
+                    y = qrand() % 10;
+
+                    QPoint *p = new QPoint(x, y);
+                    newGuess = *p;
+                }
+            }
+        }
+
+        // Add the chosen square to the list of already attacked squares
+        std::vector<QPoint> *attackedSquares = m_machine->getAttackedSquares();
+        attackedSquares->push_back(newGuess);
+        m_machine->setAttackedSquares(*attackedSquares);
     }
-
-    // Chosen square is added to already attacked
-    std::vector<QPoint> *attackedSquares = m_machine->getAttackedSquares();
-    attackedSquares->push_back(*currentPoint);
-    m_machine->setAttackedSquares(*attackedSquares);
-
-    // We take the squares from player's board
+    // Machine takes the sqaures from player's board
     auto sq1 = m_board1->getSquares();
 
     for (auto s : sq1) {
-        // If the randomly chosen square corresponds to some square on the player's board
-        if (s->getI() == x && s->getJ() == y){
+        // If the chosen square corresponds to the square on the player's board
+        if (s->getJ() == x && s->getI() == y) {
             currentSquare = s;
             break;
         }
     }
 
-    // If that square contains a part of the ship
+    // If the chosen square contains a part of the ship
     if (currentSquare->getSelected()) {
-        // The number of machine's correct guesses increases
-        int correct = m_machine->getCorrectGuesses();
-        m_machine->setCorrectGuesses(correct + 1);
-
-        // Green squares are drawn
-        displayClickOnSquare(true,currentSquare->pos());
-
-        // If machine won, the game is stopped, and corresponding message is displayed
-        if (m_machine->IWon()) {
-
-            machines_turn = false;
-            game_over = true;
-
-            gameOverDesign("YOU LOST!");
-        }
+        // The machine guessed correctly
+        machineGuessedCorrectly(x, y, currentPoint);
 
     } else {
-        // Red squares are drawn
-        displayClickOnSquare(false, currentSquare->pos());
+        // The machine guessed wrong
+        machineGuessedWrong(x, y);
+    }
+}
 
-        // Now it's player's turn to play
+void Main::fillNextTrys(bool setUp, bool setDown, bool setLeft, bool setRight, int x, int y)
+{
+    QPoint *pointUp = new QPoint(x, y-1);
+    QPoint *pointLeft = new QPoint(x-1, y);
+    QPoint *pointDown = new QPoint(x, y+1);
+    QPoint *pointRight = new QPoint(x+1, y);
+
+    if (setUp) {
+        nextTrys.push_back(*pointUp);
+    }
+
+    if (setDown) {
+        nextTrys.push_back(*pointDown);
+    }
+
+    if (setLeft) {
+        nextTrys.push_back(*pointLeft);
+    }
+
+    if (setRight) {
+        nextTrys.push_back(*pointRight);
+    }
+}
+
+void Main::newGuessIsTheLastElementFromNextTrys() {
+    int n = nextTrys.size();
+    newGuess = nextTrys.at(n-1);
+    nextTrys.pop_back();
+}
+
+// The function processes correct guess by machine
+void Main::machineGuessedCorrectly(int x, int y, QPoint *currentPoint) {
+
+    // The number of correct guesses is increased
+    int correct = m_machine->getCorrectGuesses();
+    m_machine->setCorrectGuesses(correct + 1);
+
+    // If this correct guess is a first correct guess in a row
+    if (!m_machine->getIsFirstGuessInARow()) {
+
+        // Machine has a first guess in a row
+        m_machine->setIsFirstGuessInARow(true);
+        firstGuess = *currentPoint;
+        // Original square is the first correct guess in a row
+        originalSquare = currentSquare;
+
+        // Machine has new guesses
+        m_machine->setHaveNewGuesses(true);
+
+        // Set all the machines current or past movement to false
+        m_machine->setGoUp(false);
+        m_machine->setGoDown(false);
+        m_machine->setGoLeft(false);
+        m_machine->setGoRight(false);
+
+        m_machine->setWentUp(false);
+        m_machine->setWentDown(false);
+        m_machine->setWentLeft(false);
+        m_machine->setWentRight(false);
+
+        // If the current square isn't on border
+        if (!currentSquare->squareIsOnBorder()) {
+            // We fill the list of next trys with points up, down, left and right from the original point
+            fillNextTrys(true, true, true, true, x, y);
+
+            // Machine takes the last element from the list and sets it as a new guess
+            newGuessIsTheLastElementFromNextTrys();
+            // If the current square is bottom right corner
+        } else if (currentSquare->checkIfSquareIs("bottomRightCorner")) {
+            fillNextTrys(true, false, true, false, x, y);
+            newGuessIsTheLastElementFromNextTrys();
+        } else if (currentSquare->checkIfSquareIs("topRightCorner")) {
+
+            fillNextTrys(false, true, true, false, x, y);
+            newGuessIsTheLastElementFromNextTrys();
+        } else if (currentSquare->checkIfSquareIs("rightBorder")) {
+
+            fillNextTrys(true, true, true, false, x, y);
+            newGuessIsTheLastElementFromNextTrys();
+        } else if (currentSquare->checkIfSquareIs("bottomLeftCorner")) {
+
+            fillNextTrys(true, false, false, true, x, y);
+            newGuessIsTheLastElementFromNextTrys();
+        } else if (currentSquare->checkIfSquareIs("topLeftCorner")) {
+            fillNextTrys(false, true, false, true, x, y);
+            newGuessIsTheLastElementFromNextTrys();
+        } else if (currentSquare->checkIfSquareIs("leftBorder")) {
+
+            fillNextTrys(true, true, false, true, x, y);
+            newGuessIsTheLastElementFromNextTrys();
+        } else if (currentSquare->checkIfSquareIs("bottomBorder")) {
+            fillNextTrys(true, false, true, true, x, y);
+            newGuessIsTheLastElementFromNextTrys();
+        } else if (currentSquare->checkIfSquareIs("topBorder")) {
+            fillNextTrys(false, true, true, true, x, y);
+            newGuessIsTheLastElementFromNextTrys();
+        }
+    // If the machine has a first guess in a row, but hasn't established in which direction to go
+    } else if (m_machine->getIsFirstGuessInARow() && !m_machine->getGoUp() && !m_machine->getGoDown() && !m_machine->getGoLeft() && !m_machine->getGoRight()){
+        // if the original square isn't on border
+        if (!originalSquare->squareIsOnBorder()) {
+            int n = nextTrys.size();
+            if (n == 3) {
+                m_machine->setGoRight(true);
+            } else if (n == 2) {
+                m_machine->setGoLeft(true);
+            } else if (n == 1) {
+                m_machine->setGoDown(true);
+            } else if (n == 0) {
+                m_machine->setGoUp(true);
+            }
+            // if the original square is on top border
+        } else if (originalSquare->checkIfSquareIs("topBorder")) {
+            int n = nextTrys.size();
+
+            if (n == 2) {
+                m_machine->setGoRight(true);
+            } else if (n == 1) {
+                m_machine->setGoLeft(true);
+            } else if (n == 0) {
+                m_machine->setGoDown(true);
+            }
+           //  if the original square is on bottom border
+        } else if (originalSquare->checkIfSquareIs("bottomBorder")) {
+            int n = nextTrys.size();
+
+            if (n == 2) {
+                m_machine->setGoRight(true);
+            } else if (n == 1) {
+                m_machine->setGoLeft(true);
+            } else if (n == 0) {
+                m_machine->setGoUp(true);
+            }
+            // if the original square is on right border
+        } else if (originalSquare->checkIfSquareIs("rightBorder")) {
+            int n = nextTrys.size();
+
+            if (n == 2) {
+                m_machine->setGoLeft(true);
+            } else if (n == 1) {
+                m_machine->setGoDown(true);
+            } else if (n == 0) {
+                m_machine->setGoUp(true);
+            }
+
+           // if the original square is on left border
+        } else if (originalSquare->checkIfSquareIs("leftBorder")) {
+            int n = nextTrys.size();
+
+            if (n == 2) {
+                m_machine->setGoRight(true);
+            } else if (n == 1) {
+                m_machine->setGoDown(true);
+            } else if (n == 0) {
+                m_machine->setGoUp(true);
+            }
+           // if the original square is in top left corner
+        } else if (originalSquare->checkIfSquareIs("topLeftCorner")) {
+            int n = nextTrys.size();
+
+            if (n == 1) {
+                m_machine->setGoRight(true);
+            } else if (n == 0) {
+                m_machine->setGoDown(true);
+            }
+            // if the original square is in top right corner
+        } else if (originalSquare->checkIfSquareIs("topRightCorner")) {
+            int n = nextTrys.size();
+
+            if (n == 1) {
+                m_machine->setGoLeft(true);
+            } else if (n == 0) {
+                m_machine->setGoDown(true);
+            }
+            // if the original square is in bottom left corner
+        } else if (originalSquare->checkIfSquareIs("bottomLeftCorner")) {
+            int n = nextTrys.size();
+
+            if (n == 1) {
+                m_machine->setGoRight(true);
+            } else if (n == 0) {
+                m_machine->setGoUp(true);
+            }
+            // if the original square is in bottom right corner
+        } else if (originalSquare->checkIfSquareIs("bottomRightCorner")) {
+            int n = nextTrys.size();
+
+            if (n == 1) {
+                m_machine->setGoLeft(true);
+            } else if (n == 0) {
+                m_machine->setGoUp(true);
+            }
+
+        }
+    }
+
+    // if the direction of machine's movement is up
+    if (m_machine->getGoUp()) {
+        // if the square above the current is valid take that square as the new guess
+        if (y-1 >= 0) {
+            QPoint *p = new QPoint(x, y-1);
+            newGuess = *p;
+        } else {
+            // if it isn't valid, stop going up, it went up, and check if it went down, if it didn't try going down,
+            // else machine doesn't have new guess
+            m_machine->setGoUp(false);
+            m_machine->setWentUp(true);
+            if (!m_machine->getWentDown()) {
+                m_machine->setGoDown(true);
+                newGuess.setX(firstGuess.x());
+                newGuess.setY(firstGuess.y()+1);
+            } else {
+                m_machine->setHaveNewGuesses(false);
+                m_machine->setIsFirstGuessInARow(false);
+            }
+        }
+        // if the direction of machine's movement is down
+    } else if (m_machine->getGoDown()) {
+        // if the square below the current is valid take that square as the new guess
+        if (y+1 < 10) {
+            QPoint *p = new QPoint(x, y+1);
+            newGuess = *p;
+        } else {
+            // if it isn't valid, stop going down, it went down, and check if it went up, if it didn't try going up,
+            // else machine doesn't have new guess
+            m_machine->setGoDown(false);
+            m_machine->setWentDown(true);
+            if (!m_machine->getWentUp()) {
+                m_machine->setGoUp(true);
+                newGuess.setX(firstGuess.x());
+                newGuess.setY(firstGuess.y()-1);
+            } else {
+                m_machine->setHaveNewGuesses(false);
+                m_machine->setIsFirstGuessInARow(false);
+            }
+        }
+        // if the direction of machine's movement is left
+    } else if (m_machine->getGoLeft()) {
+        // if the square to the left is valid take that square as the new guess
+        if (x-1 >= 0) {
+            QPoint *p = new QPoint(x-1, y);
+            newGuess = *p;
+        } else {
+            // if it isn't valid, stop going left, it went left, and check if it went right, if it didn't try going right,
+            // else machine doesn't have new guess
+            m_machine->setGoLeft(false);
+            m_machine->setWentLeft(true);
+            if (!m_machine->getWentRight()) {
+                m_machine->setGoRight(true);
+                newGuess.setX(firstGuess.x()+1);
+                newGuess.setY(firstGuess.y());
+            } else {
+                m_machine->setHaveNewGuesses(false);
+                m_machine->setIsFirstGuessInARow(false);
+            }
+        }
+        // if the direction of machine's movement is right
+    } else if (m_machine->getGoRight()) {
+        // if the square to the right is valid take that square as the new guess
+        if (x+1 < 10) {
+            QPoint *p = new QPoint(x+1, y);
+            newGuess = *p;
+        } else {
+            // if it isn't valid, stop going right, it went right, and check if it went left, if it didn't try going left,
+            // else machine doesn't have new guess
+            m_machine->setGoRight(false);
+            m_machine->setWentRight(true);
+            if (!m_machine->getWentLeft()) {
+                m_machine->setGoLeft(true);
+                newGuess.setX(firstGuess.x()-1);
+                newGuess.setY(firstGuess.y());
+            } else {
+                m_machine->setHaveNewGuesses(false);
+                m_machine->setIsFirstGuessInARow(false);
+            }
+        }
+    }
+
+    // display squares
+    QPointF* position = new QPointF(60 + 20*x, 100 + 20*y);
+    displayClickOnSquare(true, *position);
+
+    // if the machine guessed correctly delay it's next movement by 1.5 seconds so it would be better visible
+    delay();
+
+    // If the machine won, the player lost and game over
+    if (m_machine->IWon()) {
+
+        machines_turn = false;
+        game_over = true;
+
+        gameOverDesign("YOU LOST!");
+    }
+}
+
+void Main::machineGuessedWrong(int x, int y)
+{
+    // display squares
+    QPointF* position = new QPointF(60 + 20*x, 100 + 20*y);
+    displayClickOnSquare(false, *position);
+
+    // If machine has first guess in a row but it hasn't established the direction of the movement
+    if (m_machine->getIsFirstGuessInARow() && !m_machine->getGoUp() && !m_machine->getGoDown() && !m_machine->getGoLeft() && !m_machine->getGoRight()){
+        int n = nextTrys.size();
+        if (n > 0) {
+            // New guess is next square from the list of next trys
+            newGuess = nextTrys.at(n-1);
+            nextTrys.pop_back();
+        } else {
+            // Machines doesn't have new guesses
+            m_machine->setHaveNewGuesses(false);
+            m_machine->setIsFirstGuessInARow(false);
+        }
+        connectSquaresToPlayersAttackFunction();
+        // It's player's turn to play
+        machines_turn = false;
+        players_turn = true;
+    } else if (m_machine->getIsFirstGuessInARow()) {
+        // If the machine was moving up and made a mistake
+        if (m_machine->getGoUp()) {
+            // stop going up, went up, if it didn't go down and original square is valid
+            m_machine->setGoUp(false);
+            m_machine->setWentUp(true);
+            if (!m_machine->getWentDown() && !originalSquare->checkIfSquareIs("bottomLeftCorner") && !originalSquare->checkIfSquareIs("bottomRightCorner") && !originalSquare->checkIfSquareIs("bottomBorder")) {
+                m_machine->setGoDown(true);
+                newGuess.setX(firstGuess.x());
+                newGuess.setY(firstGuess.y()+1);
+            } else {
+                m_machine->setHaveNewGuesses(false);
+                m_machine->setIsFirstGuessInARow(false);
+            }
+            // If the machine was moving down and made a mistake
+        } else if (m_machine->getGoDown()) {
+            // stop going down, went down, if it didn't go up and original square is valid
+            m_machine->setGoDown(false);
+            m_machine->setWentDown(true);
+            if (!m_machine->getWentUp() && !originalSquare->checkIfSquareIs("topLeftCorner") && !originalSquare->checkIfSquareIs("topRightCorner") && !originalSquare->checkIfSquareIs("topBorder")) {
+                m_machine->setGoUp(true);
+                newGuess.setX(firstGuess.x());
+                newGuess.setY(firstGuess.y()-1);
+            } else {
+                m_machine->setHaveNewGuesses(false);
+                m_machine->setIsFirstGuessInARow(false);
+            }
+            // If the machine was moving left and made a mistake
+        } else if (m_machine->getGoLeft()) {
+            // stop going left, went left, if it didn't go right and original square is valid
+            m_machine->setGoLeft(false);
+            m_machine->setWentLeft(true);
+            if (!m_machine->getWentRight() && !originalSquare->checkIfSquareIs("bottomRightCorner") && !originalSquare->checkIfSquareIs("topRightCorner") && !originalSquare->checkIfSquareIs("rightBorder")) {
+                m_machine->setGoRight(true);
+                newGuess.setX(firstGuess.x()+1);
+                newGuess.setY(firstGuess.y());
+            } else {
+                m_machine->setHaveNewGuesses(false);
+                m_machine->setIsFirstGuessInARow(false);
+            }
+            // If the machine was moving right and made a mistake
+        } else if (m_machine->getGoRight()) {
+            // stop going right, went right, if it didn't go left and original square is valid
+            m_machine->setGoRight(false);
+            m_machine->setWentRight(true);
+            if (!m_machine->getWentLeft() && !originalSquare->checkIfSquareIs("bottomLeftCorner") && !originalSquare->checkIfSquareIs("topLeftCorner") && !originalSquare->checkIfSquareIs("leftBorder")) {
+                m_machine->setGoLeft(true);
+                newGuess.setX(firstGuess.x()-1);
+                newGuess.setY(firstGuess.y());
+            } else {
+                m_machine->setHaveNewGuesses(false);
+                m_machine->setIsFirstGuessInARow(false);
+            }
+        }
+        connectSquaresToPlayersAttackFunction();
+        // It's player's turn to play
+        machines_turn = false;
+        players_turn = true;
+    } else if (!m_machine->getIsFirstGuessInARow()) {
+        // It's player's turn to play
+        connectSquaresToPlayersAttackFunction();
         machines_turn = false;
         players_turn = true;
     }
+
 }
+
+// Funtion to delay machines attack after correct guess
+void Main::delay()
+{
+    QTime time = QTime::currentTime().addSecs(1.5);
+    while (QTime::currentTime() < time)
+        QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
+}
+
 
 //the function for moving and rotating the ship
 void Main::moveShip(const QPointF startPoint, int length, bool isVerticalSetting, std::vector<int> coords) const
@@ -457,6 +1000,7 @@ void Main::onReadyClicked()//clicked when game is ready to start
              * the function that processes player's attack.
              */
             connectSquaresToPlayersAttackFunction();
+            qDebug() << "OVDE SE MORALO DESITI KONEKTOVANJE";
 
 
             // The game begins
@@ -502,6 +1046,8 @@ void Main::restart()
 
 void Main::playersAttack(int i, int j, QPointF position) {
 
+    qDebug() << "Pozvao se playersAttack";
+
     /*
      * If the position where the player clicked has the value 1 in the matrix of the machine
      * then the player guessed correctly.
@@ -510,6 +1056,8 @@ void Main::playersAttack(int i, int j, QPointF position) {
         // The number of player's correct guesses increases
         int correct = m_player->getCorrectGuesses();
         m_player->setCorrectGuesses(correct + 1);
+
+        qDebug() << "CORRECT: " << correct + 1;
 
         // Green squares are drawn
         displayClickOnSquare(true, position);
@@ -533,6 +1081,8 @@ void Main::playersAttack(int i, int j, QPointF position) {
         displayClickOnSquare(false, position);
         players_turn = false;
         machines_turn = true;
+
+        disconnectSquaresToPlayersAttackFunction();
     }
     // We exit if branch in function game
     loop.exit();

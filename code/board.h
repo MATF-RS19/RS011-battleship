@@ -5,6 +5,8 @@
 #include <QList>
 #include <QGraphicsScene>
 
+// For this class we got the inspiration from the internet (git hub - battleship)
+
 class Board {
 
 public:
